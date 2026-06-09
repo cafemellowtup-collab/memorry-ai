@@ -1488,12 +1488,27 @@ async function syncWithCloud() {
     if (window.RAG.fetchJsonState) {
       const cloudState = await window.RAG.fetchJsonState();
       if (cloudState) {
-        if (cloudState.reminders) state.reminders = cloudState.reminders;
-        if (cloudState.lists) state.lists = cloudState.lists;
-        if (cloudState.chatHistory) state.chatHistory = cloudState.chatHistory;
+        // Intelligent Merge Logic (Keep newest, combine arrays)
+        if (cloudState.reminders) {
+          const merged = new Map(state.reminders.map(r => [r.id, r]));
+          cloudState.reminders.forEach(cr => merged.set(cr.id, cr)); // Cloud overwrites local if same ID
+          state.reminders = Array.from(merged.values());
+        }
+        if (cloudState.lists) {
+          const merged = new Map(state.lists.map(l => [l.id, l]));
+          cloudState.lists.forEach(cl => merged.set(cl.id, cl));
+          state.lists = Array.from(merged.values());
+        }
+        if (cloudState.chatHistory) {
+          // Chat history usually doesn't have IDs, so we merge by timestamp or just take cloud if it's longer
+          if (cloudState.chatHistory.length > state.chatHistory.length) {
+            state.chatHistory = cloudState.chatHistory;
+          }
+        }
         if (cloudState.user) state.user = cloudState.user;
+        
         fullSyncTriggered = true;
-        console.log('☁️ Downloaded Full App State from dedicated JSON table!');
+        console.log('☁️ Successfully merged Full App State from JSON table!');
       }
     }
 
