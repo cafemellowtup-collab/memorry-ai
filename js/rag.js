@@ -145,6 +145,25 @@ async function pushAppState(stateStr) {
   }
 }
 
+function subscribeToRealtime(onSyncRequired) {
+  if (!currentUserId || !supabaseClient) return;
+  
+  supabaseClient
+    .channel('public:memories')
+    .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'memories', 
+        filter: `user_id=eq.${currentUserId}` 
+    }, payload => {
+      console.log('⚡ Realtime Update Received from Cloud!', payload);
+      if (onSyncRequired) onSyncRequired();
+    })
+    .subscribe((status) => {
+      console.log('📡 WebSocket Status:', status);
+    });
+}
+
 // Export everything to global scope
 window.RAG = {
   supabaseClient,
@@ -154,6 +173,7 @@ window.RAG = {
   searchMemories,
   fetchAllMemoriesFromCloud,
   pushAppState,
+  subscribeToRealtime,
   getCurrentUser,
   signOut,
   get userId() { return currentUserId; }

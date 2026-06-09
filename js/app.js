@@ -1574,7 +1574,21 @@ async function init() {
   }
 
   loadState();
-  syncWithCloud();
+  await syncWithCloud();
+
+  // 2. Setup Live Realtime WebSockets
+  if (window.RAG && window.RAG.subscribeToRealtime) {
+    window.RAG.subscribeToRealtime(() => {
+      syncWithCloud(); // Silently pull updates if cloud changes
+    });
+  }
+
+  // 3. Setup Wake-up Sync (When unlocking phone or switching tabs)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      syncWithCloud();
+    }
+  });
 
   // Ensure critical arrays always exist after load
   if (!Array.isArray(state.reminders))   state.reminders   = defaultState.reminders;
