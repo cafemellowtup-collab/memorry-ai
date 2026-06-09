@@ -1513,7 +1513,6 @@ function setupVoiceInput() {
       submitSpeech();
     };
 
-    // Start recognition
     try {
       recognition.start();
     } catch (err) {
@@ -1521,8 +1520,9 @@ function setupVoiceInput() {
       showToast('⚠️ Could not access microphone.');
       cleanup();
     }
-  });
-}
+  }); // Closes micBtn.addEventListener
+  }); // Closes micBtns.forEach
+} // Closes setupVoiceInput
 
 async function syncWithCloud() {
   if (window.RAG) {
@@ -1533,18 +1533,14 @@ async function syncWithCloud() {
     if (window.RAG.fetchJsonState) {
       const cloudState = await window.RAG.fetchJsonState();
       if (cloudState) {
-        // Intelligent Merge Logic (Keep newest, combine arrays)
+        // Intelligent Sync Logic (Cloud is source of truth to support deletions)
         if (cloudState.reminders) {
-          const merged = new Map(state.reminders.map(r => [r.id, r]));
-          cloudState.reminders.forEach(cr => merged.set(cr.id, cr)); // Cloud overwrites local if same ID
-          state.reminders = Array.from(merged.values());
+          state.reminders = cloudState.reminders;
           // Sort so newest created items are always at the top
           state.reminders.sort((a, b) => b.id - a.id);
         }
         if (cloudState.lists) {
-          const merged = new Map(state.lists.map(l => [l.id, l]));
-          cloudState.lists.forEach(cl => merged.set(cl.id, cl));
-          state.lists = Array.from(merged.values());
+          state.lists = cloudState.lists;
           state.lists.sort((a, b) => b.id - a.id);
         }
         if (cloudState.chatHistory) {
