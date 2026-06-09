@@ -129,7 +129,8 @@ async function fetchAllMemoriesFromCloud() {
 async function pushAppState(stateStr) {
   try {
     if (!currentUserId) { const u = await getCurrentUser(); if (!u) return; }
-    const vector = await generateEmbedding('app_state');
+    // Use dummy vector for app state to bypass slow AI model load
+    const vector = new Array(384).fill(0);
     // Delete old state snapshot for this user and insert new one
     await supabaseClient.from('memories').delete()
       .eq('user_id', currentUserId)
