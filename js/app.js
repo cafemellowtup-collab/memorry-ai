@@ -797,6 +797,7 @@ Valid Action Codes (use ONLY if the user explicitly asks you to perform the acti
 - "DISABLE_FOCUS" : if they ask to turn off focus mode
 - "DARK_MODE" : if they ask to switch to dark theme
 - "LIGHT_MODE" : if they ask to switch to light theme
+- "DISABLE_NOTIFICATIONS" : if they ask to turn off notifications
 - "CLEAR_COMPLETED" : if they ask to delete or clear all completed reminders
 Otherwise, set "action" to null.
 
@@ -1626,6 +1627,11 @@ async function init() {
   }
 
   loadState();
+
+  if (state.settings?.theme) {
+    document.documentElement.setAttribute('data-theme', state.settings.theme);
+  }
+
   await syncWithCloud();
 
   // 2. Setup Live Realtime WebSockets
@@ -1796,6 +1802,13 @@ function executeAIAction(action) {
       state.settings = state.settings || {};
       state.settings.theme = 'light';
       saveState();
+      break;
+    case 'DISABLE_NOTIFICATIONS':
+      if ('Notification' in window) {
+        state.settings = state.settings || {};
+        state.settings.notifications = false;
+        saveState();
+      }
       break;
     case 'CLEAR_COMPLETED':
       state.reminders = state.reminders.filter(r => !r.done);
