@@ -1515,3 +1515,10 @@
 .voice-btn { background: none; border: none; color: var(--primary); font-size: 18px; cursor: pointer; transition: transform 0.2s, text-shadow 0.2s; } .voice-btn:hover { transform: scale(1.1); } .voice-btn.recording { color: var(--error); animation: pulse-record 1.5s infinite; text-shadow: 0 0 10px rgba(239,68,68,0.5); } @keyframes pulse-record { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
 .category-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; } .category-work { background: rgba(59, 130, 246, 0.2); color: #60a5fa; } .category-personal { background: rgba(16, 185, 129, 0.2); color: #34d399; } .category-health { background: rgba(239, 68, 68, 0.2); color: #f87171; } .category-shopping { background: rgba(245, 158, 11, 0.2); color: #fbbf24; } .category-finance { background: rgba(16, 185, 129, 0.2); color: #34d399; } .category-other { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+
+
+/* ZEN MODE */
+body.zen-mode #app-sidebar { filter: blur(5px); opacity: 0.5; pointer-events: none; transition: 0.5s all; }
+body.zen-mode #top-nav { filter: blur(5px); opacity: 0.5; pointer-events: none; transition: 0.5s all; }
+body.zen-mode #view-settings { filter: blur(5px); opacity: 0.5; pointer-events: none; }
+
