@@ -363,11 +363,11 @@ async function parseReminderWithAI(text) {
   const currentApiKey = state.user?.apiKey || 'gsk_...';
   if (currentApiKey === 'gsk_...') {
     // Fallback to basic if no API key
-    const timeMatch = text.match(/\b(\d{1,2}(?::\d{2})?\s*(?:am|pm))\b/i);
+    const timeMatch = text.match(/\b(\d{1,2}(?::\d{2})?\s*(?:am|pm|in the morning|in the evening|at night|o'?clock|in the afternoon))\b/i);
     const time = timeMatch ? timeMatch[1].toUpperCase() : 'Today';
-    const cleanText = text.replace(/\bat\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/i, '').trim();
+    const cleanText = text.replace(/\b(?:at|on|tomorrow|today|next)\b\s*\b(\d{1,2}(?::\d{2})?\s*(?:am|pm|in the morning|in the evening|at night|o'?clock|in the afternoon))\b/i, '').trim();
     // Default to +1 hour for fallback timestamp
-    return [{ text: cleanText, displayTime: time, isoDate: new Date(Date.now() + 3600000).toISOString(), priority: 'medium' }];
+    return [{ text: cleanText, displayTime: time, localIsoDate: new Date(Date.now() + 3600000).toISOString().slice(0, 23), priority: 'medium' }];
   }
 
   try {
@@ -381,13 +381,18 @@ async function parseReminderWithAI(text) {
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
         messages: [
-          { role: 'system', content: `You are an AI reminder parser. Return ONLY a valid JSON object containing an array of reminders. 
-Extract the reminder task and exact time(s) from the user's text. If the user mentions multiple dates/times, create multiple reminder objects.
-Current Date/Time String: ${now.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
-You MUST calculate the precise future LOCAL date string for each reminder. OMIT the 'Z' at the end of the isoDate so it stays in Local Time.
-Vague dates rules: If user says "last week of December", default to the Monday of that week at 9:00 AM. If they say "next month", default to the 1st of that month at 9:00 AM. Always make a logical decision.
-JSON format: {"reminders": [{"text": "Cleaned task description", "displayTime": "Tomorrow (Jun 10) 1:45 PM", "localIsoDate": "YYYY-MM-DDTHH:mm:00.000", "priority": "low" | "medium" | "high"}]}
-Ensure displayTime always includes the exact Month and Day (e.g., "Next Wed (Jun 17) 1:20 PM") so there is no ambiguity.` },
+          { role: 'system', content: `You are an advanced AI reminder parser. Your strict job is to extract the core task and precise future time, returning ONLY valid JSON.
+Current Local Date/Time: ${now.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+
+Rules:
+1. Clean the 'text' field: REMOVE all time/date words from the task description. For example, if user says "Call John tomorrow at 9am", the text MUST be exactly "Call John".
+2. Time phrasing: Understand human phrases perfectly. "9 o'clock in the morning", "9 in the morning", and "9am" all mean 09:00 AM. "9 at night", "9pm" mean 09:00 PM.
+3. Vague dates: If a day is mentioned without a time (e.g. "tomorrow"), default to 9:00 AM.
+4. Output 'localIsoDate' exactly as: "YYYY-MM-DDTHH:mm:00.000" (NO 'Z' at the end).
+5. Output 'displayTime' containing the friendly day, month/date, and time: e.g. "Tomorrow (Jun 10) 9:00 AM".
+
+JSON Schema:
+{"reminders": [{"text": "string", "displayTime": "string", "localIsoDate": "string", "priority": "low"|"medium"|"high"}]}` },
           { role: 'user', content: text }
         ],
         temperature: 0,
