@@ -415,8 +415,8 @@
               <div id="focus-timer-display" style="font-family:var(--font-display); font-size:64px; font-weight:900; letter-spacing:-0.04em; background:var(--gradient-text); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:var(--space-5);">25:00</div>
               <p style="font-size:13px; color:var(--text-muted); margin-bottom: var(--space-6);">Pomodoro timer — 25 min focused work</p>
               <div style="display:flex; gap:var(--space-3); justify-content:center;">
-                <button class="btn btn-primary" id="timer-start" onclick="startTimer()">▶ Start</button>
-                <button class="btn btn-secondary" id="timer-reset" onclick="resetTimer()">↺ Reset</button>
+                <button class="btn btn-primary" id="timer-start">▶ Start</button>
+                <button class="btn btn-secondary" id="timer-reset">↺ Reset</button>
               </div>
             </div>
           </div>
@@ -579,7 +579,7 @@
               <div style="font-size:13px; font-weight:700; color:var(--error); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-4);">Danger Zone</div>
               <div style="display: flex; gap: 10px;">
                 <button class="btn btn-secondary btn-sm" id="clear-data-btn" style="color:var(--error); border-color:rgba(239,68,68,0.3);">Clear Local Data</button>
-                <button class="btn btn-secondary btn-sm" onclick="if(window.RAG) window.RAG.signOut()" style="color:var(--error); border-color:rgba(239,68,68,0.3);">Sign Out</button>
+                <button class="btn btn-secondary btn-sm" id="sign-out-btn" style="color:var(--error); border-color:rgba(239,68,68,0.3);">Sign Out</button>
               </div>
             </div>
           </div>
