@@ -140,3 +140,22 @@ export function updateContextChips() {
     chipContainer.appendChild(el);
   });
 }
+
+export function setupSearch() {
+  const input = document.getElementById('global-search');
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase().trim();
+    if (!q) return;
+
+    const results = [
+      ...state.reminders.filter(r => r.text.toLowerCase().includes(q)),
+      ...state.memories.filter(m => m.text.toLowerCase().includes(q) || (m.title && m.title.toLowerCase().includes(q)))
+    ];
+
+    if (results.length > 0 && typeof window.showToast === 'function') {
+      window.showToast(`🔍 Found ${results.length} result${results.length > 1 ? 's' : ''} for "${q}"`);
+    }
+  });
+}

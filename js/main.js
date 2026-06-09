@@ -1,6 +1,7 @@
 import { state, loadState, defaultState, saveState } from './core/state.js';
 import { syncWithCloud } from './core/sync.js';
-import { updateDateTime, setupSearch } from './features/ui.js';
+import { showToast } from './core/utils.js';
+import { updateDateTime, setupNavigation, setupSearch, updateContextChips } from './features/ui.js';
 import { renderReminders, setupReminderInputs } from './features/reminders.js';
 import { renderMemories, setupMemoryForm } from './features/memories.js';
 import { renderLists } from './features/lists.js';
@@ -53,9 +54,11 @@ async function init() {
   updateDateTime();
   updateBriefingStats();
   
-  // Expose renderReminders globally as it's used by other modules (sync, clear completed)
+  // Expose methods globally for external HTML use and inline events where needed
   window.renderReminders = renderReminders;
   window.updateBriefingStats = updateBriefingStats;
+  window.updateContextChips = updateContextChips;
+  window.showToast = showToast;
   
   renderReminders('dashboard-reminder-list');
   renderReminders('full-reminder-list');
@@ -65,6 +68,7 @@ async function init() {
   updateFocusStats();
   renderSchedule();
   
+  setupNavigation();
   setupReminderInputs();
   setupMemoryForm();
   setupMoodTracker();
