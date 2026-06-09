@@ -985,7 +985,9 @@ GUIDELINES:
         }
       }
 
-      const aiText = await callGemini({ text, ragContext });
+      const response = await callGemini({ text, ragContext });
+      const replyText = typeof response === 'object' ? response.text : response;
+      const action = typeof response === 'object' ? response.action : null;
       removeTyping();
 
       // Build response bubble and stream text into it
