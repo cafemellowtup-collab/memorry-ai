@@ -803,6 +803,12 @@ Valid Action Codes (use ONLY if the user explicitly asks you to perform the acti
 - "LIGHT_MODE" : switch to light theme
 - "ENABLE_NOTIFICATIONS" : turn on push notifications (or simply "notifications on")
 - "DISABLE_NOTIFICATIONS" : turn off push notifications (or simply "notifications off", "notification off")
+- "ENABLE_BRIEFING" : turn on daily briefing
+- "DISABLE_BRIEFING" : turn off daily briefing
+- "ENABLE_SERENDIPITY" : turn on serendipity notifications
+- "DISABLE_SERENDIPITY" : turn off serendipity notifications
+- "ENABLE_INSIGHTS" : turn on AI insights
+- "DISABLE_INSIGHTS" : turn off AI insights
 - "CLEAR_COMPLETED" : delete or clear all completed reminders
 Otherwise, set "action" to null.
 CRITICAL: ALWAYS return the appropriate "action" code if the user requests it, even if the app is ALREADY in that state! The app relies on the action code to render the UI widget.
@@ -1124,13 +1130,38 @@ function setupSettings() {
     });
   }
 
-  // Toggle switches
+  // Toggle switches sync logic
+  window.syncUIToggles = function() {
+    const sync = (id, isActive) => {
+      const toggle = document.getElementById(id);
+      if (!toggle) return;
+      toggle.setAttribute('aria-checked', isActive.toString());
+      toggle.style.background = isActive ? 'var(--gradient-aurora)' : 'var(--neutral-700, #374151)';
+      const knob = toggle.querySelector('div');
+      if (knob) {
+        knob.style.right = isActive ? '3px' : 'calc(100% - 21px)';
+      }
+    };
+    const s = state.settings || {};
+    sync('toggle-notifications', !!s.notifications);
+    sync('toggle-briefing', !!s.briefing);
+    sync('toggle-serendipity', !!s.serendipity);
+    sync('toggle-insights', !!s.insights);
+  };
+
   document.querySelectorAll('.toggle-switch').forEach(toggle => {
     toggle.addEventListener('click', () => {
       const current = toggle.getAttribute('aria-checked') === 'true';
-      toggle.setAttribute('aria-checked', !current);
-      toggle.style.background      = !current ? 'linear-gradient(135deg, #7c3aed, #06b6d4)' : 'var(--neutral-700, #374151)';
-      toggle.querySelector('div').style.right = !current ? '3px' : 'calc(100% - 21px)';
+      const newState = !current;
+      
+      state.settings = state.settings || {};
+      if (toggle.id === 'toggle-notifications') state.settings.notifications = newState;
+      if (toggle.id === 'toggle-briefing') state.settings.briefing = newState;
+      if (toggle.id === 'toggle-serendipity') state.settings.serendipity = newState;
+      if (toggle.id === 'toggle-insights') state.settings.insights = newState;
+      
+      saveState();
+      window.syncUIToggles();
     });
   });
 
@@ -1679,6 +1710,7 @@ async function init() {
   setupSerendipity();
   setupNotifications();
   setupSettings();
+  if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
   setupSearch();
   updateTimerDisplay();
   setupAppChat(); // ← called HERE, after state is loaded
@@ -1877,22 +1909,82 @@ function executeAIAction(action, container) {
     case 'ENABLE_NOTIFICATION':
       state.settings.notifications = true;
       saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
       renderActionWidget(container, '🔔', 'Notifications', true, (active) => {
         state.settings.notifications = active;
         saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
       });
       break;
     case 'DISABLE_NOTIFICATIONS':
     case 'DISABLE_NOTIFICATION':
       state.settings.notifications = false;
       saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
       renderActionWidget(container, '🔕', 'Notifications', false, (active) => {
-        state.settings.notifications = !active; // if active is true, it means they toggled the "Disable Notifications" switch ON, which means notifications are OFF. Wait, active means the widget is "ON". So if the widget is "Notifications Disabled", active=true means notifications=false. Let's name the widget "Disable Notifications" or just "Notifications".
-        // Actually, the widget says "Notifications". So if active=true, notifications=true.
-        // Wait, action is "DISABLE_NOTIFICATIONS", so initialActive is false.
-        // If they click it, active becomes true. So notifications = true.
         state.settings.notifications = active;
         saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      });
+      break;
+    case 'ENABLE_BRIEFING':
+      state.settings.briefing = true;
+      saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      renderActionWidget(container, '🌅', 'Daily Briefing', true, (active) => {
+        state.settings.briefing = active;
+        saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      });
+      break;
+    case 'DISABLE_BRIEFING':
+      state.settings.briefing = false;
+      saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      renderActionWidget(container, '🌅', 'Daily Briefing', false, (active) => {
+        state.settings.briefing = active;
+        saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      });
+      break;
+    case 'ENABLE_SERENDIPITY':
+      state.settings.serendipity = true;
+      saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      renderActionWidget(container, '✨', 'Serendipity', true, (active) => {
+        state.settings.serendipity = active;
+        saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      });
+      break;
+    case 'DISABLE_SERENDIPITY':
+      state.settings.serendipity = false;
+      saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      renderActionWidget(container, '✨', 'Serendipity', false, (active) => {
+        state.settings.serendipity = active;
+        saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      });
+      break;
+    case 'ENABLE_INSIGHTS':
+      state.settings.insights = true;
+      saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      renderActionWidget(container, '🔮', 'AI Insights', true, (active) => {
+        state.settings.insights = active;
+        saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      });
+      break;
+    case 'DISABLE_INSIGHTS':
+      state.settings.insights = false;
+      saveState();
+      if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
+      renderActionWidget(container, '🔮', 'AI Insights', false, (active) => {
+        state.settings.insights = active;
+        saveState();
+        if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
       });
       break;
     case 'CLEAR_COMPLETED':
