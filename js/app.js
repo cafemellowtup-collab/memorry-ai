@@ -107,24 +107,18 @@ function saveState() {
 
 async function pushStateToCloud() {
   if (!window.RAG || !window.RAG.supabaseClient) return;
-  
-  // Clone state and remove memories (since they are synced via Vector DB)
+  if (!window.RAG.userId) {
+    await window.RAG.getCurrentUser();
+    if (!window.RAG.userId) return;
+  }
+
+  // Clone state and remove memories (synced via Vector DB)
   const stateToSync = { ...state };
   delete stateToSync.memories;
-  
+
   const stateStr = '__APP_STATE__\n' + JSON.stringify(stateToSync);
-  
-  try {
-    // Generate dummy embedding just to satisfy Supabase
-    const vector = await window.RAG.generateEmbedding('app_state');
-    
-    // Delete old state snapshot and insert the new one
-    await window.RAG.supabaseClient.from('memories').delete().like('content', '__APP_STATE__%');
-    await window.RAG.supabaseClient.from('memories').insert([{ content: stateStr, embedding: vector }]);
-    console.log('☁️ Full App State perfectly synchronized to Cloud!');
-  } catch (e) {
-    console.error('Failed to sync state to cloud', e);
-  }
+
+  await window.RAG.pushAppState(stateStr);
 }
 
 function clearAllData() {
@@ -1565,7 +1559,20 @@ async function syncWithCloud() {
 // ===========================
 // INIT — state must be loaded before any function that reads it
 // ===========================
-function init() {
+async function init() {
+  // 1. Check Authentication FIRST
+  if (window.RAG) {
+    const user = await window.RAG.getCurrentUser();
+    if (!user) {
+      window.location.replace('login.html');
+      return;
+    }
+    // Update local state with user info
+    state.user = state.user || {};
+    state.user.name = user.user_metadata?.full_name || user.email;
+    state.user.email = user.email;
+  }
+
   loadState();
   syncWithCloud();
 

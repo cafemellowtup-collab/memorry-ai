@@ -7,6 +7,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let supabaseClient = null;
 let embedder = null;
 let isModelLoaded = false;
+let currentUserId = null;
 
 // Initialize Supabase Client
 if (window.supabase) {
@@ -16,16 +17,37 @@ if (window.supabase) {
   console.error('❌ Supabase script not loaded');
 }
 
-// Initialize Transformers.js
+// =====================
+// AUTH FUNCTIONS
+// =====================
+async function getSession() {
+  const { data } = await supabaseClient.auth.getSession();
+  return data.session;
+}
+
+async function getCurrentUser() {
+  const session = await getSession();
+  if (session) {
+    currentUserId = session.user.id;
+    return session.user;
+  }
+  return null;
+}
+
+async function signOut() {
+  await supabaseClient.auth.signOut();
+  window.location.replace('login.html');
+}
+
+// =====================
+// EMBEDDING MODEL
+// =====================
 async function initEmbedder() {
   if (isModelLoaded) return;
   try {
     const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.0');
-    // Force Transformers.js to use the remote Hugging Face CDN instead of looking for local files
     env.allowLocalModels = false;
-    
     console.log('⏳ Downloading/Loading Xenova AI embedding model...');
-    // This will download the ~20MB model on first run and cache it in the browser
     embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
       progress_callback: (info) => {
         if (info.status === 'progress') {
@@ -42,27 +64,25 @@ async function initEmbedder() {
   }
 }
 
-// Generate vector embedding for any text
 async function generateEmbedding(text) {
   if (!isModelLoaded) await initEmbedder();
-  
-  // Create embedding
   const output = await embedder(text, { pooling: 'mean', normalize: true });
-  // Convert Float32Array to standard array
   return Array.from(output.data);
 }
 
-// Save a memory to Supabase with its vector embedding
+// =====================
+// CLOUD OPERATIONS (user-scoped)
+// =====================
+
 async function saveMemoryToRAG(text) {
   try {
+    if (!currentUserId) { const u = await getCurrentUser(); if (!u) return; }
     console.log('Generating embedding for memory...');
     const vector = await generateEmbedding(text);
-    
     console.log('Syncing memory to Supabase...');
     const { data, error } = await supabaseClient
       .from('memories')
-      .insert([{ content: text, embedding: vector }]);
-
+      .insert([{ content: text, embedding: vector, user_id: currentUserId }]);
     if (error) throw error;
     console.log('✅ Memory saved to Supabase vectors!');
     return data;
@@ -71,35 +91,33 @@ async function saveMemoryToRAG(text) {
   }
 }
 
-// Perform Semantic Search against all saved memories
 async function searchMemories(query, limit = 3) {
   try {
+    if (!currentUserId) { const u = await getCurrentUser(); if (!u) return []; }
     const queryVector = await generateEmbedding(query);
-    
-    // Call the RPC function we created in Supabase
     const { data, error } = await supabaseClient.rpc('match_memories', {
       query_embedding: queryVector,
-      match_threshold: 0.2, // Very low threshold so we always get some context
+      match_threshold: 0.2,
       match_count: limit
     });
-
     if (error) throw error;
-    return data; // Returns array of { id, content, similarity }
+    // Filter to only this user's results
+    return (data || []).filter(m => m.user_id === currentUserId);
   } catch (error) {
     console.error('❌ Semantic search failed:', error);
     return [];
   }
 }
 
-// Fetch all memories from Supabase on app load
 async function fetchAllMemoriesFromCloud() {
   try {
+    if (!currentUserId) { const u = await getCurrentUser(); if (!u) return []; }
     console.log('☁️ Fetching memories from Supabase...');
     const { data, error } = await supabaseClient
       .from('memories')
-      .select('id, content, created_at')
+      .select('id, content, created_at, user_id')
+      .eq('user_id', currentUserId)
       .order('created_at', { ascending: false });
-
     if (error) throw error;
     return data;
   } catch (error) {
@@ -108,13 +126,37 @@ async function fetchAllMemoriesFromCloud() {
   }
 }
 
-// Export functions to global scope so app.js can use them
+async function pushAppState(stateStr) {
+  try {
+    if (!currentUserId) { const u = await getCurrentUser(); if (!u) return; }
+    const vector = await generateEmbedding('app_state');
+    // Delete old state snapshot for this user and insert new one
+    await supabaseClient.from('memories').delete()
+      .eq('user_id', currentUserId)
+      .like('content', '__APP_STATE__%');
+    await supabaseClient.from('memories').insert([{
+      content: stateStr,
+      embedding: vector,
+      user_id: currentUserId
+    }]);
+    console.log('☁️ Full App State pushed to Cloud!');
+  } catch(e) {
+    console.error('Failed to push app state', e);
+  }
+}
+
+// Export everything to global scope
 window.RAG = {
+  supabaseClient,
   initEmbedder,
   generateEmbedding,
   saveMemoryToRAG,
   searchMemories,
-  fetchAllMemoriesFromCloud
+  fetchAllMemoriesFromCloud,
+  pushAppState,
+  getCurrentUser,
+  signOut,
+  get userId() { return currentUserId; }
 };
 
 // Start loading the model in the background immediately

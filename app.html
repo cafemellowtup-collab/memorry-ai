@@ -573,7 +573,10 @@
             <!-- Danger zone -->
             <div>
               <div style="font-size:13px; font-weight:700; color:var(--error); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-4);">Danger Zone</div>
-              <button class="btn btn-secondary btn-sm" id="clear-data-btn" style="color:var(--error); border-color:rgba(239,68,68,0.3);">Clear All Data</button>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary btn-sm" id="clear-data-btn" style="color:var(--error); border-color:rgba(239,68,68,0.3);">Clear Local Data</button>
+                <button class="btn btn-secondary btn-sm" onclick="if(window.RAG) window.RAG.signOut()" style="color:var(--error); border-color:rgba(239,68,68,0.3);">Sign Out</button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexMem — Sign In</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #7c3aed;
+      --purple-light: #a855f7;
+      --cyan: #06b6d4;
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: rgba(255,255,255,0.08);
+      --text: #f1f0ff;
+      --muted: #6b6990;
+      --error: #f87171;
+      --success: #34d399;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated background */
+    .bg-glow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    }
+    .glow-1 {
+      position: absolute; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      animation: float1 8s ease-in-out infinite;
+    }
+    .glow-2 {
+      position: absolute; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%);
+      bottom: -150px; right: -150px;
+      animation: float2 10s ease-in-out infinite;
+    }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,30px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-40px)} }
+
+    .card {
+      position: relative; z-index: 1;
+      background: rgba(18,18,26,0.85);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 44px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.1);
+      animation: slideUp 0.5s ease;
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      justify-content: center; margin-bottom: 32px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: white;
+    }
+    .logo-text { font-size: 22px; font-weight: 700; color: var(--text); }
+
+    .tabs {
+      display: flex; background: rgba(255,255,255,0.04);
+      border-radius: 12px; padding: 4px; margin-bottom: 28px;
+    }
+    .tab {
+      flex: 1; padding: 10px; border: none; background: none;
+      color: var(--muted); font-size: 14px; font-weight: 500;
+      border-radius: 9px; cursor: pointer; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .tab.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .form-group { margin-bottom: 16px; }
+    label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: rgba(241,240,255,0.7); margin-bottom: 6px;
+    }
+    input[type="email"], input[type="password"], input[type="text"] {
+      width: 100%; padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text);
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+    }
+    input::placeholder { color: var(--muted); }
+
+    .btn-submit {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--purple), #6d28d9);
+      border: none; border-radius: 12px;
+      color: white; font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+      margin-top: 8px;
+      position: relative; overflow: hidden;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,58,237,0.4); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--muted); font-size: 12px; margin: 20px 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .btn-google {
+      width: 100%; padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text);
+      font-size: 14px; font-weight: 500;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all 0.2s;
+    }
+    .btn-google:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+
+    .message {
+      padding: 12px 16px; border-radius: 10px;
+      font-size: 13px; margin-bottom: 16px;
+      display: none;
+    }
+    .message.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--error); display: block; }
+    .message.success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--success); display: block; }
+
+    .spinner {
+      width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: inline-block;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-link {
+      text-align: center; margin-top: 24px;
+      font-size: 13px; color: var(--muted);
+    }
+    .footer-link a { color: var(--purple-light); text-decoration: none; }
+    .footer-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+  </div>
+
+  <div class="card">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">✦</div>
+      <span class="logo-text">NexMem</span>
+    </a>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+      <button class="tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <div id="message-box" class="message"></div>
+
+    <!-- Sign In Form -->
+    <form id="signin-form" onsubmit="handleSignIn(event)">
+      <div class="form-group">
+        <label for="signin-email">Email</label>
+        <input type="email" id="signin-email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="signin-password">Password</label>
+        <input type="password" id="signin-password" placeholder="••••••••" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-submit" id="signin-btn">Sign In →</button>
+    </form>
+
+    <!-- Sign Up Form -->
+    <form id="signup-form" style="display:none;" onsubmit="handleSignUp(event)">
+      <div class="form-group">
+        <label for="signup-name">Your Name</label>
+        <input type="text" id="signup-name" placeholder="Gokul Raj" required />
+      </div>
+      <div class="form-group">
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" placeholder="At least 6 characters" required autocomplete="new-password" minlength="6" />
+      </div>
+      <button type="submit" class="btn-submit" id="signup-btn">Create Account →</button>
+    </form>
+
+    <p class="footer-link">
+      <a href="index.html">← Back to homepage</a>
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://oxjexjllnvoddqcepnbl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94amV4amxsbnZvZGRxY2VwbmJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5ODIzMzMsImV4cCI6MjA5NjU1ODMzM30.4K6CXNVJnwvFNLrBpM_ed3AduOZQ0lmQJmNoy_MZRvI';
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // If already logged in, go straight to app
+    client.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.replace('app.html');
+    });
+
+    function switchTab(tab) {
+      const isSignin = tab === 'signin';
+      document.getElementById('tab-signin').classList.toggle('active', isSignin);
+      document.getElementById('tab-signup').classList.toggle('active', !isSignin);
+      document.getElementById('signin-form').style.display = isSignin ? '' : 'none';
+      document.getElementById('signup-form').style.display = isSignin ? 'none' : '';
+      clearMessage();
+    }
+
+    function showMessage(text, type) {
+      const box = document.getElementById('message-box');
+      box.textContent = text;
+      box.className = 'message ' + type;
+    }
+    function clearMessage() {
+      const box = document.getElementById('message-box');
+      box.className = 'message';
+      box.textContent = '';
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      if (loading) {
+        btn.innerHTML = '<span class="spinner"></span> Please wait...';
+      } else {
+        btn.innerHTML = btnId === 'signin-btn' ? 'Sign In →' : 'Create Account →';
+      }
+    }
+
+    async function handleSignIn(e) {
+      e.preventDefault();
+      clearMessage();
+      setLoading('signin-btn', true);
+      const email = document.getElementById('signin-email').value;
+      const password = document.getElementById('signin-password').value;
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) {
+        showMessage('❌ ' + error.message, 'error');
+        setLoading('signin-btn', false);
+      } else {
+        showMessage('✅ Signed in! Redirecting...', 'success');
+        setTimeout(() => window.location.replace('app.html'), 800);
+      }
+    }
+
+    async function handleSignUp(e) {
+      e.preventDefault();
+      clearMessage();
+      setLoading('signup-btn', true);
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const { error } = await client.auth.signUp({
+        email, password,
+        options: { data: { full_name: name } }
+      });
+      if (error) {
+        showMessage('❌ ' + error.message, 'error');
+        setLoading('signup-btn', false);
+      } else {
+        showMessage('🎉 Account created! Signing you in...', 'success');
+        // Auto sign in after signup
+        await client.auth.signInWithPassword({ email, password });
+        setTimeout(() => window.location.replace('app.html'), 1000);
+      }
+    }
+  </script>
+</body>
+</html>
