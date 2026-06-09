@@ -801,8 +801,8 @@ Valid Action Codes (use ONLY if the user explicitly asks you to perform the acti
 - "DISABLE_FOCUS" : turn off focus modes
 - "DARK_MODE" : switch to dark theme
 - "LIGHT_MODE" : switch to light theme
-- "ENABLE_NOTIFICATIONS" : turn on push notifications
-- "DISABLE_NOTIFICATIONS" : turn off push notifications
+- "ENABLE_NOTIFICATIONS" : turn on push notifications (or simply "notifications on")
+- "DISABLE_NOTIFICATIONS" : turn off push notifications (or simply "notifications off", "notification off")
 - "CLEAR_COMPLETED" : delete or clear all completed reminders
 Otherwise, set "action" to null.
 
@@ -1872,6 +1872,7 @@ function executeAIAction(action, container) {
       });
       break;
     case 'ENABLE_NOTIFICATIONS':
+    case 'ENABLE_NOTIFICATION':
       state.settings.notifications = true;
       saveState();
       renderActionWidget(container, '🔔', 'Notifications', true, (active) => {
@@ -1880,6 +1881,7 @@ function executeAIAction(action, container) {
       });
       break;
     case 'DISABLE_NOTIFICATIONS':
+    case 'DISABLE_NOTIFICATION':
       state.settings.notifications = false;
       saveState();
       renderActionWidget(container, '🔕', 'Notifications', false, (active) => {
