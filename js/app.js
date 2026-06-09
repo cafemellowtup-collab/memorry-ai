@@ -318,7 +318,10 @@ function renderReminders(containerId) {
       </div>
       <div class="reminder-info">
         <div class="reminder-title">${escapeHtml(r.text)}</div>
-        <div class="reminder-time">🕐 ${escapeHtml(r.time)}</div>
+        <div class="reminder-meta" style="display:flex; align-items:center; gap:8px;">
+          <div class="reminder-time">🕐 ${escapeHtml(r.time)}</div>
+          ${r.category ? `<span class="category-badge category-${r.category.toLowerCase()}">${escapeHtml(r.category)}</span>` : ''}
+        </div>
       </div>
       <div class="reminder-priority ${r.priority}" title="${r.priority} priority"></div>
       <button class="list-add-btn" style="color:var(--text-muted); font-size:16px;" title="Delete reminder" aria-label="Delete reminder">×</button>
@@ -367,7 +370,7 @@ async function parseReminderWithAI(text) {
     const time = timeMatch ? timeMatch[1].toUpperCase() : 'Today';
     const cleanText = text.replace(/\b(?:at|on|tomorrow|today|next)\b\s*\b(\d{1,2}(?::\d{2})?\s*(?:am|pm|in the morning|in the evening|at night|o'?clock|in the afternoon))\b/i, '').trim();
     // Default to +1 hour for fallback timestamp
-    return [{ text: cleanText, displayTime: time, localIsoDate: new Date(Date.now() + 3600000).toISOString().slice(0, 23), priority: 'medium' }];
+    return [{ text: cleanText, displayTime: time, localIsoDate: new Date(Date.now() + 3600000).toISOString().slice(0, 23), priority: 'medium', category: 'Other' }];
   }
 
   try {
@@ -390,9 +393,10 @@ Rules:
 3. Vague dates: If a day is mentioned without a time (e.g. "tomorrow"), default to 9:00 AM.
 4. Output 'localIsoDate' exactly as: "YYYY-MM-DDTHH:mm:00.000" (NO 'Z' at the end).
 5. Output 'displayTime' containing the friendly day, month/date, and time: e.g. "Tomorrow (Jun 10) 9:00 AM".
+6. Categorize the task into 'category'. Valid categories: Work, Personal, Health, Shopping, Finance, Other.
 
 JSON Schema:
-{"reminders": [{"text": "string", "displayTime": "string", "localIsoDate": "string", "priority": "low"|"medium"|"high"}]}` },
+{"reminders": [{"text": "string", "displayTime": "string", "localIsoDate": "string", "priority": "low"|"medium"|"high", "category": "string"}]}` },
           { role: 'user', content: text }
         ],
         temperature: 0,
@@ -432,6 +436,7 @@ async function addReminder(text) {
       timestamp: ts,
       notified: false,
       priority: parsed.priority || 'medium',
+      category: parsed.category || 'Other',
       done: false,
     };
     state.reminders.unshift(newReminder);
@@ -784,6 +789,17 @@ function setupAppChat() {
 
     return `You are NexMem AI — a brilliant, warm, and insightful personal memory assistant. You are having a conversation with ${name}.
 
+You MUST return your response as a strictly valid JSON object.
+Format: {"reply": "Your conversational text response", "action": "ACTION_CODE" | null}
+
+Valid Action Codes (use ONLY if the user explicitly asks you to perform the action):
+- "ENABLE_FOCUS" : if they ask to turn on focus mode or deep work
+- "DISABLE_FOCUS" : if they ask to turn off focus mode
+- "DARK_MODE" : if they ask to switch to dark theme
+- "LIGHT_MODE" : if they ask to switch to light theme
+- "CLEAR_COMPLETED" : if they ask to delete or clear all completed reminders
+Otherwise, set "action" to null.
+
 You have full knowledge of ${name}'s current state:
 
 PENDING REMINDERS:
@@ -807,11 +823,9 @@ GUIDELINES:
 - Be warm, concise, and genuinely helpful — like a brilliant assistant who truly knows them
 - Reference their actual data naturally when relevant (e.g. their reminders, memories, mood)
 - When they ask you to add a reminder or memory, acknowledge it warmly and guide them to use the sidebar panels
-- Use occasional emojis to keep things friendly, but don't overdo it
 - Give actionable, specific advice based on their real data
-- Keep responses under 150 words unless they ask for detail
-- Format with **bold** for emphasis when helpful
-- You are powered by Groq Llama 3`;
+- Keep replies under 150 words unless they ask for detail
+- Format with **bold** for emphasis when helpful`;
   }
 
   // Rolling conversation context for multi-turn chat
@@ -909,14 +923,15 @@ GUIDELINES:
         'Authorization': `Bearer ${currentApiKey}`
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'llama-3.1-8b-instant',
         messages: [
           { role: 'system', content: buildSystemPrompt() + (ragContext ? `\n\n[RAG Semantic Memory Context]:\n${ragContext}` : '') },
           ...aiHistory
         ],
-        temperature: 0.8,
+        temperature: 0.5,
         max_tokens: 400,
-        top_p: 0.9
+        top_p: 0.9,
+        response_format: { type: "json_object" }
       })
     });
 
@@ -926,12 +941,21 @@ GUIDELINES:
     }
 
     const data = await resp.json();
-    const text = data?.choices?.[0]?.message?.content
-               || 'I had trouble processing that. Please try again.';
+    let replyText = 'I had trouble processing that. Please try again.';
+    let action = null;
+    
+    try {
+      const rawContent = data?.choices?.[0]?.message?.content || '{}';
+      const parsed = JSON.parse(rawContent);
+      replyText = parsed.reply || rawContent;
+      action = parsed.action || null;
+    } catch (e) {
+      replyText = data?.choices?.[0]?.message?.content || replyText;
+    }
 
-    aiHistory.push({ role: 'assistant', content: text });
+    aiHistory.push({ role: 'assistant', content: JSON.stringify({ reply: replyText, action }) });
     if (aiHistory.length > 20) aiHistory = aiHistory.slice(-20);
-    return text;
+    return { text: replyText, action };
   }
 
   async function sendMsg() {
@@ -977,14 +1001,17 @@ GUIDELINES:
       msg.appendChild(bub);
       messages.appendChild(msg);
       messages.scrollTop = messages.scrollHeight;
-      streamTextIntoBubble(bub, aiText);
+      streamTextIntoBubble(bub, replyText);
 
-      state.chatHistory.push({ text: aiText, role: 'ai' });
+      state.chatHistory.push({ text: replyText, role: 'ai' });
       saveState();
+
+      if (action) {
+        executeAIAction(action);
+      }
     } catch (err) {
       removeTyping();
-      console.error('Groq API error:', err);
-      addMsg(`⚠️ Groq error: ${err.message}`, 'ai');
+      addMsg(`Error: ${err.message}. Check your API key.`, 'ai');
     } finally {
       sendBtn.disabled  = false;
       sendBtn.style.opacity = '1';
@@ -1319,113 +1346,126 @@ function formatDate(dateStr) {
 // VOICE INPUT (Web Speech API)
 // ===========================
 function setupVoiceInput() {
-  const micBtn = document.getElementById('chat-mic-btn');
-  if (!micBtn) return;
-
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  micBtn.addEventListener('click', () => {
-    if (!SpeechRecognition) {
-      showToast('⚠️ Voice input not supported in this browser. Please use Chrome, Edge, or Safari.');
-      return;
-    }
+  // Find all mic buttons
+  const micBtns = [
+    { btnId: 'chat-mic-btn', inputId: 'app-chat-input', submitId: 'app-chat-send' },
+    { btnId: 'voice-quick-add', inputId: 'quick-add-reminder', submitId: 'quick-add-btn' },
+    { btnId: 'voice-full-add', inputId: 'full-add-reminder', submitId: 'full-add-btn' }
+  ];
 
-    // Initialize Recognition
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+  micBtns.forEach(({ btnId, inputId, submitId }) => {
+    const micBtn = document.getElementById(btnId);
+    if (!micBtn) return;
 
-    let finalTranscript = '';
-    let autoSendTimer = null;
-    let isAborted = false;
-
-    // Create Modal Elements
-    let overlay = document.getElementById('voice-input-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'voice-input-overlay';
-      overlay.className = 'voice-overlay';
-      overlay.innerHTML = `
-        <div class="voice-modal">
-          <div class="voice-modal-title">Voice Input</div>
-          <div class="voice-waves" id="voice-waves">
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-          </div>
-          <div class="voice-transcript placeholder" id="voice-transcript">Listening for speech...</div>
-          <div class="voice-modal-actions">
-            <button class="voice-stop-btn" id="voice-cancel-btn">Cancel</button>
-            <button class="voice-send-btn" id="voice-send-btn" disabled>Send Now</button>
-          </div>
-          <div class="voice-status" id="voice-status">
-            <span class="recording-dot"></span>Connecting...
-          </div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-    } else {
-      overlay.style.display = 'flex';
-    }
-
-    const waves = document.getElementById('voice-waves');
-    const transcriptEl = document.getElementById('voice-transcript');
-    const statusEl = document.getElementById('voice-status');
-    const sendBtn = document.getElementById('voice-send-btn');
-    const cancelBtn = document.getElementById('voice-cancel-btn');
-
-    // Reset Modal UI State
-    waves.classList.add('active');
-    transcriptEl.textContent = 'Listening for speech...';
-    transcriptEl.className = 'voice-transcript placeholder';
-    statusEl.innerHTML = '<span class="recording-dot"></span>Listening...';
-    sendBtn.disabled = true;
-    micBtn.classList.add('recording');
-
-    // Silence detection helper
-    function resetAutoSendTimer() {
-      if (autoSendTimer) clearTimeout(autoSendTimer);
-      if (finalTranscript.trim()) {
-        autoSendTimer = setTimeout(() => {
-          submitSpeech();
-        }, 2000); // 2 seconds of silence triggers auto-send
+    micBtn.addEventListener('click', () => {
+      if (!SpeechRecognition) {
+        showToast('⚠️ Voice input not supported in this browser. Please use Chrome, Edge, or Safari.');
+        return;
       }
-    }
 
-    function cleanup() {
-      if (autoSendTimer) clearTimeout(autoSendTimer);
-      micBtn.classList.remove('recording');
-      overlay.style.display = 'none';
-      try {
-        recognition.stop();
-      } catch (e) {}
-    }
+      // Initialize Recognition
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
 
-    function submitSpeech() {
-      const text = finalTranscript.trim();
-      cleanup();
-      if (text && !isAborted) {
-        const chatInput = document.getElementById('app-chat-input');
-        const chatSendBtn = document.getElementById('app-chat-send');
-        if (chatInput && chatSendBtn) {
-          chatInput.value = text;
-          // Trigger textarea resize
-          chatInput.style.height = 'auto';
-          chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
-          chatSendBtn.click();
+      let finalTranscript = '';
+      let autoSendTimer = null;
+      let isAborted = false;
+
+      // Create Modal Elements
+      let overlay = document.getElementById('voice-input-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'voice-input-overlay';
+        overlay.className = 'voice-overlay';
+        overlay.innerHTML = `
+          <div class="voice-modal">
+            <div class="voice-modal-title">Voice Input</div>
+            <div class="voice-waves" id="voice-waves">
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+            </div>
+            <div class="voice-transcript placeholder" id="voice-transcript">Listening for speech...</div>
+            <div class="voice-modal-actions">
+              <button class="voice-stop-btn" id="voice-cancel-btn">Cancel</button>
+              <button class="voice-send-btn" id="voice-send-btn" disabled>Send Now</button>
+            </div>
+            <div class="voice-status" id="voice-status">
+              <span class="recording-dot"></span>Connecting...
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      } else {
+        overlay.style.display = 'flex';
+      }
+
+      const waves = document.getElementById('voice-waves');
+      const transcriptEl = document.getElementById('voice-transcript');
+      const statusEl = document.getElementById('voice-status');
+      const sendBtn = document.getElementById('voice-send-btn');
+      const cancelBtn = document.getElementById('voice-cancel-btn');
+
+      // Reset Modal UI State
+      waves.classList.add('active');
+      transcriptEl.textContent = 'Listening for speech...';
+      transcriptEl.className = 'voice-transcript placeholder';
+      statusEl.innerHTML = '<span class="recording-dot"></span>Listening...';
+      sendBtn.disabled = true;
+      micBtn.classList.add('recording');
+
+      // Silence detection helper
+      function resetAutoSendTimer() {
+        if (autoSendTimer) clearTimeout(autoSendTimer);
+        if (finalTranscript.trim()) {
+          autoSendTimer = setTimeout(() => {
+            submitSpeech();
+          }, 2000); // 2 seconds of silence triggers auto-send
         }
       }
-    }
 
-    recognition.onstart = () => {
-      statusEl.innerHTML = '<span class="recording-dot"></span>Speak now...';
-    };
+      function cleanup() {
+        if (autoSendTimer) clearTimeout(autoSendTimer);
+        micBtn.classList.remove('recording');
+        overlay.style.display = 'none';
+        try {
+          recognition.stop();
+        } catch (e) {}
+        
+        // Remove existing event listeners to prevent duplicates on next open
+        sendBtn.replaceWith(sendBtn.cloneNode(true));
+        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+      }
+
+      function submitSpeech() {
+        const text = finalTranscript.trim();
+        cleanup();
+        if (text && !isAborted) {
+          const targetInput = document.getElementById(inputId);
+          const targetSubmit = document.getElementById(submitId);
+          if (targetInput && targetSubmit) {
+            targetInput.value = text;
+            if (targetInput.tagName.toLowerCase() === 'textarea') {
+              targetInput.style.height = 'auto';
+              targetInput.style.height = Math.min(targetInput.scrollHeight, 120) + 'px';
+            }
+            targetSubmit.click();
+          }
+        }
+      }
+
+      recognition.onstart = () => {
+        statusEl.innerHTML = '<span class="recording-dot"></span>Speak now...';
+      };
 
     recognition.onresult = (event) => {
       let interimTranscript = '';
@@ -1736,4 +1776,35 @@ function startReminderChecker(registration) {
       saveState();
     }
   }, 60000); // Check every 60,000 ms (1 minute)
+}
+
+function executeAIAction(action) {
+  console.log("AI Requested Action:", action);
+  switch (action) {
+    case 'ENABLE_FOCUS':
+      if (typeof window.toggleFocusMode === 'function') window.toggleFocusMode(true);
+      break;
+    case 'DISABLE_FOCUS':
+      if (typeof window.toggleFocusMode === 'function') window.toggleFocusMode(false);
+      break;
+    case 'DARK_MODE':
+      document.documentElement.setAttribute('data-theme', 'dark');
+      state.settings = state.settings || {};
+      state.settings.theme = 'dark';
+      saveState();
+      break;
+    case 'LIGHT_MODE':
+      document.documentElement.setAttribute('data-theme', 'light');
+      state.settings = state.settings || {};
+      state.settings.theme = 'light';
+      saveState();
+      break;
+    case 'CLEAR_COMPLETED':
+      state.reminders = state.reminders.filter(r => !r.done);
+      saveState();
+      renderReminders('dashboard-reminder-list');
+      renderReminders('full-reminder-list');
+      updateBriefingStats();
+      break;
+  }
 }

@@ -212,6 +212,7 @@
                 </div>
               </div>
               <div class="add-reminder-form">
+                <button class="voice-btn" id="voice-quick-add" aria-label="Voice input" title="Dictate reminder">🎤</button>
                 <input type="text" class="add-reminder-input" id="quick-add-reminder" placeholder="e.g. Call dentist at 5:00 PM" aria-label="Add a quick reminder" autocomplete="off" />
                 <button class="add-reminder-btn" id="quick-add-btn" aria-label="Add reminder">+</button>
               </div>
@@ -291,12 +292,14 @@
           </div>
 
           <div class="chat-input-area">
+            <button class="voice-btn" id="voice-chat" aria-label="Voice input" title="Speak to NexMem" style="position: absolute; left: 16px; top: 18px; z-index: 10;">🎤</button>
             <textarea
               class="chat-input"
               id="app-chat-input"
               placeholder="Ask NexMem anything... (Press Enter to send, Shift+Enter for new line)"
               aria-label="AI chat input"
               rows="1"
+              style="padding-left: 48px;"
             ></textarea>
             <div class="chat-actions-row">
               <button class="chat-tool-btn" id="chat-mic-btn" aria-label="Voice input" title="Voice input">🎤</button>
@@ -325,6 +328,7 @@
             </div>
           </div>
           <div class="add-reminder-form">
+            <button class="voice-btn" id="voice-full-add" aria-label="Voice input" title="Dictate reminder">🎤</button>
             <input type="text" class="add-reminder-input" id="full-add-reminder" placeholder='Add reminder... e.g. "Dentist appointment tomorrow at 3pm" or "Weekly team sync every Monday 9am"' aria-label="Add reminder" autocomplete="off" />
             <button class="add-reminder-btn" id="full-add-btn" aria-label="Add reminder">+</button>
           </div>
