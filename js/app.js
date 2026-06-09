@@ -805,6 +805,7 @@ Valid Action Codes (use ONLY if the user explicitly asks you to perform the acti
 - "DISABLE_NOTIFICATIONS" : turn off push notifications (or simply "notifications off", "notification off")
 - "CLEAR_COMPLETED" : delete or clear all completed reminders
 Otherwise, set "action" to null.
+CRITICAL: ALWAYS return the appropriate "action" code if the user requests it, even if the app is ALREADY in that state! The app relies on the action code to render the UI widget.
 
 You have full knowledge of ${name}'s current state:
 
@@ -1832,6 +1833,7 @@ function executeAIAction(action, container) {
       });
       break;
     case 'ENABLE_FLOW':
+    case 'ENABLE_FOCUS':
       if (typeof window.setFocusMode === 'function') window.setFocusMode('flow');
       renderActionWidget(container, '🌊', 'Flow State', true, (active) => {
         if (typeof window.setFocusMode === 'function') window.setFocusMode(active ? 'flow' : 'off');
