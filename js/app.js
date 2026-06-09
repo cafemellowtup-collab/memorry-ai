@@ -2100,6 +2100,8 @@ function executeAIAction(action, container) {
       });
       break;
     case 'ENABLE_SERENDIPITY':
+    case 'ENABLE_SERENDIPITY_NOTIFICATION':
+    case 'ENABLE_SERENDIPITY_NOTIFICATIONS':
       state.settings.serendipity = true;
       saveState();
       if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
@@ -2110,6 +2112,8 @@ function executeAIAction(action, container) {
       });
       break;
     case 'DISABLE_SERENDIPITY':
+    case 'DISABLE_SERENDIPITY_NOTIFICATION':
+    case 'DISABLE_SERENDIPITY_NOTIFICATIONS':
       state.settings.serendipity = false;
       saveState();
       if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
@@ -2120,6 +2124,9 @@ function executeAIAction(action, container) {
       });
       break;
     case 'ENABLE_INSIGHTS':
+    case 'ENABLE_INSIGHT':
+    case 'ENABLE_AI_INSIGHTS':
+    case 'ENABLE_AI_INSIGHT':
       state.settings.insights = true;
       saveState();
       if (typeof window.syncUIToggles === 'function') window.syncUIToggles();
@@ -2130,6 +2137,9 @@ function executeAIAction(action, container) {
       });
       break;
     case 'DISABLE_INSIGHTS':
+    case 'DISABLE_INSIGHT':
+    case 'DISABLE_AI_INSIGHTS':
+    case 'DISABLE_AI_INSIGHT':
       state.settings.insights = false;
       saveState();
       if (typeof window.syncUIToggles === 'function') window.syncUIToggles();

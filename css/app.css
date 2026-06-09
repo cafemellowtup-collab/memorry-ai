@@ -1517,8 +1517,31 @@
 .category-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; } .category-work { background: rgba(59, 130, 246, 0.2); color: #60a5fa; } .category-personal { background: rgba(16, 185, 129, 0.2); color: #34d399; } .category-health { background: rgba(239, 68, 68, 0.2); color: #f87171; } .category-shopping { background: rgba(245, 158, 11, 0.2); color: #fbbf24; } .category-finance { background: rgba(16, 185, 129, 0.2); color: #34d399; } .category-other { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
 
 
-/* ZEN MODE */
-body.zen-mode #app-sidebar { filter: blur(5px); opacity: 0.5; pointer-events: none; transition: 0.5s all; }
-body.zen-mode #top-nav { filter: blur(5px); opacity: 0.5; pointer-events: none; transition: 0.5s all; }
-body.zen-mode #view-settings { filter: blur(5px); opacity: 0.5; pointer-events: none; }
+/* ZEN MODE (Deep Work) */
+body.zen-mode #sidebar { 
+  width: 0 !important; 
+  padding: 0 !important; 
+  margin: 0 !important; 
+  opacity: 0; 
+  pointer-events: none; 
+  overflow: hidden; 
+  border: none;
+}
+body.zen-mode .app-main { 
+  width: 100vw !important; 
+}
+body.zen-mode .app-topbar { 
+  filter: blur(5px); 
+  opacity: 0.2; 
+  pointer-events: none; 
+}
+body.zen-mode #view-settings, body.zen-mode #view-dashboard { 
+  filter: blur(5px); 
+  opacity: 0.2; 
+  pointer-events: none; 
+}
+body.zen-mode .chat-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
 
