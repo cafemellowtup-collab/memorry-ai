@@ -124,25 +124,42 @@ async function fetchAllMemoriesFromCloud() {
     console.error('❌ Failed to fetch memories:', error);
     return [];
   }
-}
+// ==========================================
+// DEDICATED JSON STATE SYNC (app_state table)
+// ==========================================
 
-async function pushAppState(stateStr) {
+async function pushJsonState(stateObj) {
   try {
     if (!currentUserId) { const u = await getCurrentUser(); if (!u) return; }
-    // Use dummy vector for app state to bypass slow AI model load
-    const vector = new Array(384).fill(0);
-    // Delete old state snapshot for this user and insert new one
-    await supabaseClient.from('memories').delete()
-      .eq('user_id', currentUserId)
-      .like('content', '__APP_STATE__%');
-    await supabaseClient.from('memories').insert([{
-      content: stateStr,
-      embedding: vector,
-      user_id: currentUserId
-    }]);
-    console.log('☁️ Full App State pushed to Cloud!');
+    
+    const { error } = await supabaseClient.from('app_state').upsert({
+      user_id: currentUserId,
+      state: stateObj,
+      updated_at: new Date().toISOString()
+    });
+    
+    if (error) throw error;
+    console.log('☁️ App State JSON safely pushed to Cloud!');
   } catch(e) {
-    console.error('Failed to push app state', e);
+    console.error('Failed to push JSON app state', e);
+  }
+}
+
+async function fetchJsonState() {
+  try {
+    if (!currentUserId) { const u = await getCurrentUser(); if (!u) return null; }
+    
+    const { data, error } = await supabaseClient
+      .from('app_state')
+      .select('state')
+      .eq('user_id', currentUserId)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error; // Ignore "no rows returned"
+    return data ? data.state : null;
+  } catch(e) {
+    console.error('Failed to fetch JSON app state', e);
+    return null;
   }
 }
 
@@ -150,18 +167,18 @@ function subscribeToRealtime(onSyncRequired) {
   if (!currentUserId || !supabaseClient) return;
   
   supabaseClient
-    .channel('public:memories')
+    .channel('public:app_state')
     .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
-        table: 'memories', 
+        table: 'app_state', 
         filter: `user_id=eq.${currentUserId}` 
     }, payload => {
-      console.log('⚡ Realtime Update Received from Cloud!', payload);
+      console.log('⚡ Realtime JSON State Update Received!', payload);
       if (onSyncRequired) onSyncRequired();
     })
     .subscribe((status) => {
-      console.log('📡 WebSocket Status:', status);
+      console.log('📡 JSON WebSocket Status:', status);
     });
 }
 
@@ -173,7 +190,8 @@ window.RAG = {
   saveMemoryToRAG,
   searchMemories,
   fetchAllMemoriesFromCloud,
-  pushAppState,
+  pushJsonState,
+  fetchJsonState,
   subscribeToRealtime,
   getCurrentUser,
   signOut,

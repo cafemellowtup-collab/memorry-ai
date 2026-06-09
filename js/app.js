@@ -116,9 +116,7 @@ async function pushStateToCloud() {
   const stateToSync = { ...state };
   delete stateToSync.memories;
 
-  const stateStr = '__APP_STATE__\n' + JSON.stringify(stateToSync);
-
-  await window.RAG.pushAppState(stateStr);
+  await window.RAG.pushJsonState(stateToSync);
 }
 
 function clearAllData() {
@@ -1483,19 +1481,28 @@ function setupVoiceInput() {
 
 async function syncWithCloud() {
   if (window.RAG) {
+    let fullSyncTriggered = false;
+    let addedMemories = false;
+
+    // 1. Fetch Dedicated App State JSON
+    if (window.RAG.fetchJsonState) {
+      const cloudState = await window.RAG.fetchJsonState();
+      if (cloudState) {
+        if (cloudState.reminders) state.reminders = cloudState.reminders;
+        if (cloudState.lists) state.lists = cloudState.lists;
+        if (cloudState.chatHistory) state.chatHistory = cloudState.chatHistory;
+        if (cloudState.user) state.user = cloudState.user;
+        fullSyncTriggered = true;
+        console.log('☁️ Downloaded Full App State from dedicated JSON table!');
+      }
+    }
+
+    // 2. Fetch Vector Memories
     const cloudMemories = await window.RAG.fetchAllMemoriesFromCloud();
     if (cloudMemories && cloudMemories.length > 0) {
       const existingTexts = new Set(state.memories.map(m => m.text));
-      let addedMemories = false;
-      let appStateStr = null;
       
       cloudMemories.forEach(cm => {
-        // Detect Full App State Snapshot
-        if (cm.content.startsWith('__APP_STATE__\n')) {
-          appStateStr = cm.content.replace('__APP_STATE__\n', '');
-          return; // skip normal memory parsing for this system file
-        }
-
         let memText = cm.content;
         let memTitle = 'Cloud Memory';
         let memTags = ['synced'];
@@ -1521,33 +1528,17 @@ async function syncWithCloud() {
           addedMemories = true;
         }
       });
-      
-      // Restore Full App State
-      let fullSyncTriggered = false;
-      if (appStateStr) {
-        try {
-          const cloudState = JSON.parse(appStateStr);
-          // Only overwrite if the cloud state has actual arrays/objects
-          if (cloudState.reminders) state.reminders = cloudState.reminders;
-          if (cloudState.lists) state.lists = cloudState.lists;
-          if (cloudState.chatHistory) state.chatHistory = cloudState.chatHistory;
-          if (cloudState.user) state.user = cloudState.user;
-          fullSyncTriggered = true;
-          console.log('☁️ Downloaded Full App State from Cloud!');
-        } catch(e) {
-          console.error('Failed to parse Cloud App State', e);
-        }
-      }
+    }
 
-      if (addedMemories || fullSyncTriggered) {
-        // Save silently without triggering another push
-        localStorage.setItem(STATE_KEY, JSON.stringify(state));
-        
-        // Force a total UI re-render
-        renderMemories();
+    // 3. UI Update if anything changed
+    if (addedMemories || fullSyncTriggered) {
+      // Save silently without triggering another push
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      
+      // Force UI re-render for everything that relies on state arrays
+      if (typeof renderReminders === 'function') {
         renderReminders('dashboard-reminder-list');
         renderReminders('full-reminder-list');
-        renderLists();
         updateUserDisplay();
         updateBriefingStats();
         console.log('🔄 Cloud Sync Complete: UI perfectly updated!');
