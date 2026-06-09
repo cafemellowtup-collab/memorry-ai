@@ -124,6 +124,8 @@ async function fetchAllMemoriesFromCloud() {
     console.error('❌ Failed to fetch memories:', error);
     return [];
   }
+}
+
 // ==========================================
 // DEDICATED JSON STATE SYNC (app_state table)
 // ==========================================
