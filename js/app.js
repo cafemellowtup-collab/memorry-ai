@@ -694,6 +694,8 @@ function setupFocusModes() {
     updateContextChips();
     showToast(`🎯 Focus Mode: ${labels[mode] || 'Off'}`);
   }
+  
+  window.setFocusMode = setMode;
 
   allBtns.forEach(btn => {
     btn.addEventListener('click', () => setMode(btn.dataset.mode));
@@ -793,12 +795,15 @@ You MUST return your response as a strictly valid JSON object.
 Format: {"reply": "Your conversational text response", "action": "ACTION_CODE" | null}
 
 Valid Action Codes (use ONLY if the user explicitly asks you to perform the action):
-- "ENABLE_FOCUS" : if they ask to turn on focus mode or deep work
-- "DISABLE_FOCUS" : if they ask to turn off focus mode
-- "DARK_MODE" : if they ask to switch to dark theme
-- "LIGHT_MODE" : if they ask to switch to light theme
-- "DISABLE_NOTIFICATIONS" : if they ask to turn off notifications
-- "CLEAR_COMPLETED" : if they ask to delete or clear all completed reminders
+- "ENABLE_DEEP_WORK" : turn on Deep Work focus mode
+- "ENABLE_FLOW" : turn on Flow focus mode
+- "ENABLE_REST" : turn on Rest focus mode
+- "DISABLE_FOCUS" : turn off focus modes
+- "DARK_MODE" : switch to dark theme
+- "LIGHT_MODE" : switch to light theme
+- "ENABLE_NOTIFICATIONS" : turn on push notifications
+- "DISABLE_NOTIFICATIONS" : turn off push notifications
+- "CLEAR_COMPLETED" : delete or clear all completed reminders
 Otherwise, set "action" to null.
 
 You have full knowledge of ${name}'s current state:
@@ -1010,7 +1015,7 @@ GUIDELINES:
       saveState();
 
       if (action) {
-        executeAIAction(action);
+        executeAIAction(action, bub);
       }
     } catch (err) {
       removeTyping();
@@ -1782,33 +1787,72 @@ function startReminderChecker(registration) {
   }, 60000); // Check every 60,000 ms (1 minute)
 }
 
-function executeAIAction(action) {
+function renderActionWidget(container, icon, title, isActive) {
+  if (!container) return;
+  const widget = document.createElement('div');
+  widget.style.cssText = "margin-top: 12px; padding: 12px; background: var(--bg-elevated); border-radius: 12px; border: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; animation: scaleIn 0.3s ease;";
+  
+  const toggleBg = isActive ? "var(--gradient-aurora)" : "var(--neutral-700, #374151)";
+  const toggleKnobPos = isActive ? "right: 3px;" : "left: 3px;";
+  
+  widget.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 20px;">${icon}</span>
+      <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${title}</span>
+    </div>
+    <div style="width: 44px; height: 24px; background: ${toggleBg}; border-radius: 999px; position: relative; transition: all 0.3s;">
+      <div style="width: 18px; height: 18px; background: white; border-radius: 50%; position: absolute; top: 3px; ${toggleKnobPos} transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>
+    </div>
+  `;
+  container.appendChild(widget);
+  
+  // Scroll to bottom after injecting
+  const messages = document.getElementById('chat-messages');
+  if (messages) messages.scrollTop = messages.scrollHeight;
+}
+
+function executeAIAction(action, container) {
   console.log("AI Requested Action:", action);
+  state.settings = state.settings || {};
+
   switch (action) {
-    case 'ENABLE_FOCUS':
-      if (typeof window.toggleFocusMode === 'function') window.toggleFocusMode(true);
+    case 'ENABLE_DEEP_WORK':
+      if (typeof window.setFocusMode === 'function') window.setFocusMode('deep');
+      renderActionWidget(container, '🧠', 'Deep Work', true);
+      break;
+    case 'ENABLE_FLOW':
+      if (typeof window.setFocusMode === 'function') window.setFocusMode('flow');
+      renderActionWidget(container, '🌊', 'Flow State', true);
+      break;
+    case 'ENABLE_REST':
+      if (typeof window.setFocusMode === 'function') window.setFocusMode('rest');
+      renderActionWidget(container, '☕', 'Rest Mode', true);
       break;
     case 'DISABLE_FOCUS':
-      if (typeof window.toggleFocusMode === 'function') window.toggleFocusMode(false);
+      if (typeof window.setFocusMode === 'function') window.setFocusMode('off');
+      renderActionWidget(container, '🎯', 'Focus Mode', false);
       break;
     case 'DARK_MODE':
       document.documentElement.setAttribute('data-theme', 'dark');
-      state.settings = state.settings || {};
       state.settings.theme = 'dark';
       saveState();
+      renderActionWidget(container, '🌙', 'Dark Mode', true);
       break;
     case 'LIGHT_MODE':
       document.documentElement.setAttribute('data-theme', 'light');
-      state.settings = state.settings || {};
       state.settings.theme = 'light';
       saveState();
+      renderActionWidget(container, '☀️', 'Light Mode', true);
+      break;
+    case 'ENABLE_NOTIFICATIONS':
+      state.settings.notifications = true;
+      saveState();
+      renderActionWidget(container, '🔔', 'Notifications', true);
       break;
     case 'DISABLE_NOTIFICATIONS':
-      if ('Notification' in window) {
-        state.settings = state.settings || {};
-        state.settings.notifications = false;
-        saveState();
-      }
+      state.settings.notifications = false;
+      saveState();
+      renderActionWidget(container, '🔕', 'Notifications', false);
       break;
     case 'CLEAR_COMPLETED':
       state.reminders = state.reminders.filter(r => !r.done);
@@ -1816,6 +1860,7 @@ function executeAIAction(action) {
       renderReminders('dashboard-reminder-list');
       renderReminders('full-reminder-list');
       updateBriefingStats();
+      renderActionWidget(container, '🧹', 'Clear Completed', true);
       break;
   }
 }
