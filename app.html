@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexMem — Dashboard</title>
+  <meta name="description" content="NexMem AI-powered dashboard — your second brain at work." />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+
+<div class="app-layout" id="app-layout">
+
+  <!-- =====================
+       SIDEBAR
+       ===================== -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Application sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <div class="logo-icon" style="width:32px; height:32px; border-radius:8px; font-size:15px;" aria-hidden="true">✦</div>
+        <span class="logo-text">NexMem</span>
+      </a>
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="true">‹</button>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Main navigation">
+      <span class="nav-section-label">Overview</span>
+
+      <div class="nav-item active" id="nav-home" data-panel="dashboard" role="button" tabindex="0" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">⌂</span>
+        <span class="nav-label">Dashboard</span>
+        <span class="nav-item-tooltip">Dashboard</span>
+      </div>
+
+      <div class="nav-item" id="nav-chat" data-panel="chat" role="button" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">✦</span>
+        <span class="nav-label">AI Chat</span>
+        <span class="nav-item-tooltip">AI Chat</span>
+      </div>
+
+      <span class="nav-section-label" style="margin-top:8px;">Memory</span>
+
+      <div class="nav-item" id="nav-reminders" data-panel="reminders" role="button" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">🔔</span>
+        <span class="nav-label">Reminders</span>
+        <span class="nav-badge" id="reminder-badge">3</span>
+        <span class="nav-item-tooltip">Reminders</span>
+      </div>
+
+      <div class="nav-item" id="nav-memories" data-panel="memories" role="button" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">🧠</span>
+        <span class="nav-label">Memories</span>
+        <span class="nav-item-tooltip">Memories</span>
+      </div>
+
+      <div class="nav-item" id="nav-lists" data-panel="lists" role="button" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">📋</span>
+        <span class="nav-label">Lists</span>
+        <span class="nav-item-tooltip">Lists</span>
+      </div>
+
+      <span class="nav-section-label" style="margin-top:8px;">Focus</span>
+
+      <div class="nav-item" id="nav-focus" data-panel="focus" role="button" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">🎯</span>
+        <span class="nav-label">Focus Modes</span>
+        <span class="nav-item-tooltip">Focus Modes</span>
+      </div>
+
+      <div class="nav-item" id="nav-briefing" data-panel="briefing" role="button" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">☀️</span>
+        <span class="nav-label">Daily Briefing</span>
+        <span class="nav-item-tooltip">Daily Briefing</span>
+      </div>
+
+      <span class="nav-section-label" style="margin-top:8px;">More</span>
+
+      <div class="nav-item" id="nav-settings" data-panel="settings" role="button" tabindex="0">
+        <span class="nav-icon" aria-hidden="true">⚙</span>
+        <span class="nav-label">Settings</span>
+        <span class="nav-item-tooltip">Settings</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile" id="user-profile-btn" role="button" tabindex="0" aria-label="User profile">
+        <div class="user-avatar" id="user-avatar" aria-hidden="true">Y</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name-display">You</div>
+          <div class="user-plan">✦ Pro Plan</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+
+  <!-- =====================
+       MAIN
+       ===================== -->
+  <main class="app-main" role="main">
+
+    <header class="app-topbar" role="banner">
+      <div class="topbar-left" style="display:flex; align-items:center; gap:12px; flex-direction:row;">
+        <button id="mobile-sidebar-toggle" class="topbar-btn" style="display:none;" aria-label="Open sidebar">☰</button>
+        <div style="display:flex; flex-direction:column;">
+          <div class="topbar-title" id="topbar-title">Dashboard</div>
+          <div class="topbar-sub" id="topbar-date">Loading...</div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="topbar-search" role="search">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input type="text" placeholder="Search memories..." id="global-search" aria-label="Search memories" autocomplete="off" />
+        </div>
+
+        <!-- Notifications -->
+        <div style="position:relative;">
+          <button class="topbar-btn" id="notif-btn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+            🔔
+            <span class="notif-dot" aria-hidden="true"></span>
+          </button>
+
+          <div class="notif-dropdown" id="notif-dropdown" role="dialog" aria-label="Notifications" style="display:none; position:absolute; top:54px; right:0;">
+            <div class="notif-header">
+              <span class="notif-title">Notifications</span>
+              <span class="notif-clear" id="clear-notifs" role="button" tabindex="0">Clear all</span>
+            </div>
+            <div class="notif-list" id="notif-list">
+              <div class="notif-item">
+                <div class="notif-dot-indicator" aria-hidden="true"></div>
+                <div class="notif-msg">
+                  <div class="notif-text">✦ NexMem spotted a pattern: you're most focused at 9–11am.</div>
+                  <div class="notif-time">2 min ago</div>
+                </div>
+              </div>
+              <div class="notif-item">
+                <div class="notif-dot-indicator" aria-hidden="true"></div>
+                <div class="notif-msg">
+                  <div class="notif-text">🔔 Reminder: Review project proposal</div>
+                  <div class="notif-time">15 min ago</div>
+                </div>
+              </div>
+              <div class="notif-item">
+                <div class="notif-dot-indicator" aria-hidden="true"></div>
+                <div class="notif-msg">
+                  <div class="notif-text">✨ Serendipity: An idea from 3 weeks ago may be relevant to your current project</div>
+                  <div class="notif-time">1 hour ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a href="index.html" class="topbar-btn" id="home-btn" aria-label="Go to homepage" title="Back to homepage">⌂</a>
+      </div>
+    </header>
+
+    <!-- Content area -->
+    <div class="app-content" id="app-content">
+
+      <!-- =====================
+           DASHBOARD PANEL
+           ===================== -->
+      <div class="panel-view active" id="panel-dashboard" role="region" aria-labelledby="panel-dashboard-title">
+        <h1 class="sr-only" id="panel-dashboard-title">Dashboard</h1>
+
+        <div class="dashboard-grid">
+          <div class="dashboard-left">
+
+            <!-- Briefing card -->
+            <div class="app-card briefing-card" id="briefing-widget">
+              <div class="card-body">
+                <div class="briefing-greeting" id="briefing-greeting">Good morning! 👋</div>
+                <div class="briefing-date" id="briefing-date"></div>
+
+                <div class="briefing-stats">
+                  <div class="briefing-stat">
+                    <div class="bs-number" id="bs-tasks">0</div>
+                    <div class="bs-label">Tasks Today</div>
+                  </div>
+                  <div class="briefing-stat">
+                    <div class="bs-number" id="bs-meetings">0</div>
+                    <div class="bs-label">Meetings</div>
+                  </div>
+                  <div class="briefing-stat">
+                    <div class="bs-number" id="bs-memories">0</div>
+                    <div class="bs-label">Memories</div>
+                  </div>
+                </div>
+
+                <div class="briefing-ai-insight" id="ai-insight">
+                  <span class="insight-icon">✦</span>
+                  <p class="insight-text" id="insight-text">Analyzing your patterns...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reminders quick view -->
+            <div class="app-card" id="quick-reminders">
+              <div class="card-header">
+                <span class="card-title"><span class="card-icon">🔔</span> Today's Reminders</span>
+                <span class="card-action" id="view-all-reminders" role="button" tabindex="0">View all</span>
+              </div>
+              <div class="card-body" style="padding:0;">
+                <div class="reminder-list" id="dashboard-reminder-list" style="padding: var(--space-4) var(--space-5);">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+              <div class="add-reminder-form">
+                <input type="text" class="add-reminder-input" id="quick-add-reminder" placeholder="e.g. Call dentist at 5:00 PM" aria-label="Add a quick reminder" autocomplete="off" />
+                <button class="add-reminder-btn" id="quick-add-btn" aria-label="Add reminder">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-right">
+
+            <!-- Serendipity -->
+            <div class="app-card serendipity-card" id="serendipity-widget">
+              <div class="card-header">
+                <span class="card-title">
+                  <span class="card-icon">✨</span> Serendipity
+                </span>
+                <span class="card-action" id="new-serendipity" role="button" tabindex="0">Refresh ↺</span>
+              </div>
+              <div class="card-body">
+                <div class="serendipity-label">🌟 From your memories</div>
+                <p class="serendipity-quote" id="serendipity-quote">"Loading your memories..."</p>
+                <div class="serendipity-date" id="serendipity-date"></div>
+              </div>
+            </div>
+
+            <!-- Mood tracker -->
+            <div class="app-card" id="mood-widget">
+              <div class="card-header">
+                <span class="card-title"><span class="card-icon">😊</span> How are you feeling?</span>
+              </div>
+              <div class="mood-tracker" id="mood-tracker" role="group" aria-label="Mood selection">
+                <button class="mood-btn" data-mood="1" id="mood-1" aria-label="Feeling great">😄<span>Great</span></button>
+                <button class="mood-btn" data-mood="2" id="mood-2" aria-label="Feeling good">🙂<span>Good</span></button>
+                <button class="mood-btn" data-mood="3" id="mood-3" aria-label="Feeling okay">😐<span>Okay</span></button>
+                <button class="mood-btn" data-mood="4" id="mood-4" aria-label="Feeling meh">😔<span>Meh</span></button>
+                <button class="mood-btn" data-mood="5" id="mood-5" aria-label="Feeling bad">😩<span>Rough</span></button>
+              </div>
+            </div>
+
+            <!-- Focus modes quick access -->
+            <div class="app-card" id="focus-widget">
+              <div class="card-header">
+                <span class="card-title"><span class="card-icon">🎯</span> Focus Mode</span>
+              </div>
+              <div class="focus-modes" id="dashboard-focus-modes" role="group" aria-label="Focus modes">
+                <button class="focus-mode-btn active" id="fm-off" data-mode="off">⬜ Off</button>
+                <button class="focus-mode-btn" id="fm-deep" data-mode="deep">🧠 Deep Work</button>
+                <button class="focus-mode-btn" id="fm-flow" data-mode="flow">⚡ Flow</button>
+                <button class="focus-mode-btn" id="fm-rest" data-mode="rest">🌿 Rest</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================
+           AI CHAT PANEL
+           ===================== -->
+      <div class="panel-view" id="panel-chat" role="region" aria-labelledby="panel-chat-title">
+        <h1 class="sr-only" id="panel-chat-title">AI Chat</h1>
+        <div class="app-chat">
+          <div class="memory-chips" id="memory-chips" role="group" aria-label="Memory context">
+            <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+              <span>✦ Context:</span>
+            </div>
+            <span class="memory-chip" id="chip-1">📋 3 tasks today</span>
+            <span class="memory-chip" id="chip-2">🔔 2 upcoming reminders</span>
+            <span class="memory-chip" id="chip-3">🎯 Focus: Off</span>
+            <span class="memory-chip" id="chip-4">😊 Mood: Not set</span>
+          </div>
+
+          <div class="chat-messages" id="app-chat-messages" role="log" aria-live="polite">
+            <div class="chat-msg ai" id="app-msg-0">
+              <div class="msg-avatar ai" aria-label="NexMem AI">✦</div>
+              <div class="msg-bubble">
+                Hello! I'm your NexMem AI. I can see your reminders, memories, and patterns. Ask me anything — set a reminder, recall information, plan your week, or just think out loud. I'm here to help! ✨
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <textarea
+              class="chat-input"
+              id="app-chat-input"
+              placeholder="Ask NexMem anything... (Press Enter to send, Shift+Enter for new line)"
+              aria-label="AI chat input"
+              rows="1"
+            ></textarea>
+            <div class="chat-actions-row">
+              <button class="chat-tool-btn" id="chat-mic-btn" aria-label="Voice input" title="Voice input">🎤</button>
+              <button class="chat-tool-btn" id="chat-img-btn" aria-label="Attach image" title="Attach image">📎</button>
+              <button class="chat-submit-btn" id="app-chat-send" aria-label="Send message">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================
+           REMINDERS PANEL
+           ===================== -->
+      <div class="panel-view" id="panel-reminders" role="region" aria-labelledby="panel-reminders-title">
+        <h1 class="sr-only" id="panel-reminders-title">Reminders</h1>
+        <div class="app-card">
+          <div class="card-header">
+            <span class="card-title"><span class="card-icon">🔔</span> All Reminders</span>
+            <div style="display:flex; gap:8px;">
+              <span class="badge badge-primary" id="reminder-count-badge">0 pending</span>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="reminder-list" id="full-reminder-list" style="padding: var(--space-5);">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          <div class="add-reminder-form">
+            <input type="text" class="add-reminder-input" id="full-add-reminder" placeholder='Add reminder... e.g. "Dentist appointment tomorrow at 3pm" or "Weekly team sync every Monday 9am"' aria-label="Add reminder" autocomplete="off" />
+            <button class="add-reminder-btn" id="full-add-btn" aria-label="Add reminder">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================
+           MEMORIES PANEL
+           ===================== -->
+      <div class="panel-view" id="panel-memories" role="region" aria-labelledby="panel-memories-title">
+        <h1 class="sr-only" id="panel-memories-title">Memories</h1>
+        <div class="app-card">
+          <div class="card-header">
+            <span class="card-title"><span class="card-icon">🧠</span> Memory Feed</span>
+            <span class="card-action" id="add-memory-btn" role="button" tabindex="0">+ Add Memory</span>
+          </div>
+          <div class="card-body">
+            <div class="memory-feed" id="memory-feed-list">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Add memory form (hidden by default) -->
+        <div class="app-card" id="add-memory-form" style="display:none;">
+          <div class="card-header">
+            <span class="card-title">✏️ New Memory</span>
+            <span class="card-action" id="cancel-add-memory" role="button" tabindex="0">Cancel</span>
+          </div>
+          <div class="card-body" style="display:flex; flex-direction:column; gap:12px;">
+            <input type="text" id="memory-title-input" placeholder="Title (optional)" style="background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; outline:none; font-family:inherit;" />
+            <textarea id="memory-content-input" placeholder="What do you want to remember?" rows="4" style="background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; outline:none; font-family:inherit; resize:vertical; line-height:1.5;"></textarea>
+            <input type="text" id="memory-tags-input" placeholder="Tags (comma separated, e.g. work, ideas)" style="background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; outline:none; font-family:inherit;" />
+            <button class="btn btn-primary btn-sm" id="save-memory-btn" style="width:fit-content;">Save Memory ✓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================
+           LISTS PANEL
+           ===================== -->
+      <div class="panel-view" id="panel-lists" role="region" aria-labelledby="panel-lists-title">
+        <h1 class="sr-only" id="panel-lists-title">Lists</h1>
+        <div class="lists-grid" id="lists-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- =====================
+           FOCUS PANEL
+           ===================== -->
+      <div class="panel-view" id="panel-focus" role="region" aria-labelledby="panel-focus-title">
+        <h1 class="sr-only" id="panel-focus-title">Focus Modes</h1>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-5);">
+          <div class="app-card" style="grid-column:span 2;">
+            <div class="card-header">
+              <span class="card-title"><span class="card-icon">🎯</span> Focus Modes</span>
+            </div>
+            <div class="card-body">
+              <p style="color:var(--text-secondary); font-size:14px; margin-bottom:var(--space-5);">Activate a focus mode to control how NexMem manages your notifications and surfaces memories.</p>
+              <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4);">
+                <div class="focus-mode-btn" style="flex-direction:column; height:120px; border-radius:16px; font-size:24px; gap:8px;" id="fp-off" data-mode="off">
+                  ⬜<span style="font-size:14px; font-weight:600;">Off</span><span style="font-size:12px; color:var(--text-muted); text-align:center;">All notifications</span>
+                </div>
+                <div class="focus-mode-btn" style="flex-direction:column; height:120px; border-radius:16px; font-size:24px; gap:8px;" id="fp-deep" data-mode="deep">
+                  🧠<span style="font-size:14px; font-weight:600;">Deep Work</span><span style="font-size:12px; color:var(--text-muted); text-align:center;">Minimize interruptions</span>
+                </div>
+                <div class="focus-mode-btn" style="flex-direction:column; height:120px; border-radius:16px; font-size:24px; gap:8px;" id="fp-flow" data-mode="flow">
+                  ⚡<span style="font-size:14px; font-weight:600;">Flow State</span><span style="font-size:12px; color:var(--text-muted); text-align:center;">Zero interruptions</span>
+                </div>
+                <div class="focus-mode-btn" style="flex-direction:column; height:120px; border-radius:16px; font-size:24px; gap:8px;" id="fp-rest" data-mode="rest">
+                  🌿<span style="font-size:14px; font-weight:600;">Rest</span><span style="font-size:12px; color:var(--text-muted); text-align:center;">Recovery mode</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Focus timer -->
+          <div class="app-card">
+            <div class="card-header">
+              <span class="card-title"><span class="card-icon">⏱</span> Focus Timer</span>
+            </div>
+            <div class="card-body" style="text-align:center; padding: var(--space-8);">
+              <div id="focus-timer-display" style="font-family:var(--font-display); font-size:64px; font-weight:900; letter-spacing:-0.04em; background:var(--gradient-text); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:var(--space-5);">25:00</div>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom: var(--space-6);">Pomodoro timer — 25 min focused work</p>
+              <div style="display:flex; gap:var(--space-3); justify-content:center;">
+                <button class="btn btn-primary" id="timer-start" onclick="startTimer()">▶ Start</button>
+                <button class="btn btn-secondary" id="timer-reset" onclick="resetTimer()">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Focus stats -->
+          <div class="app-card">
+            <div class="card-header">
+              <span class="card-title"><span class="card-icon">📊</span> Focus Stats</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex; flex-direction:column; gap:var(--space-4);">
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                    <span style="color:var(--text-secondary);">Today's focus</span>
+                    <span style="color:var(--primary-400);" id="today-focus">0 hrs</span>
+                  </div>
+                  <div style="height:6px; background:var(--bg-elevated); border-radius:999px; overflow:hidden;">
+                    <div id="focus-bar" style="height:100%; width:0%; background:var(--gradient-aurora); border-radius:999px; transition:width 0.5s ease;"></div>
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3);">
+                  <div style="padding:var(--space-4); background:var(--bg-elevated); border-radius:12px; border:1px solid var(--border-subtle); text-align:center;">
+                    <div style="font-family:var(--font-display); font-size:28px; font-weight:800; background:var(--gradient-text); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;" id="sessions-count">0</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Sessions today</div>
+                  </div>
+                  <div style="padding:var(--space-4); background:var(--bg-elevated); border-radius:12px; border:1px solid var(--border-subtle); text-align:center;">
+                    <div style="font-family:var(--font-display); font-size:28px; font-weight:800; background:var(--gradient-text-alt); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;" id="streak-count">0</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Day streak 🔥</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================
+           BRIEFING PANEL
+           ===================== -->
+      <div class="panel-view" id="panel-briefing" role="region" aria-labelledby="panel-briefing-title">
+        <h1 class="sr-only" id="panel-briefing-title">Daily Briefing</h1>
+        <div class="app-card briefing-card" style="margin-bottom: var(--space-5);">
+          <div class="card-body">
+            <div class="briefing-greeting" id="full-briefing-greeting">Good morning!</div>
+            <div class="briefing-date" id="full-briefing-date"></div>
+
+            <div style="margin-top: var(--space-5); font-size:15px; color:var(--text-secondary); line-height:1.7;" id="full-briefing-text">
+              Loading your personalized briefing...
+            </div>
+
+            <div class="briefing-ai-insight" style="margin-top: var(--space-5);">
+              <span class="insight-icon">✦</span>
+              <p class="insight-text" id="full-insight">Analyzing your patterns...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's schedule placeholder -->
+        <div class="app-card">
+          <div class="card-header">
+            <span class="card-title"><span class="card-icon">📅</span> Today's Schedule</span>
+          </div>
+          <div class="card-body">
+            <div id="schedule-list" style="display:flex; flex-direction:column; gap:var(--space-3);">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================
+           SETTINGS PANEL
+           ===================== -->
+      <div class="panel-view" id="panel-settings" role="region" aria-labelledby="panel-settings-title">
+        <h1 class="sr-only" id="panel-settings-title">Settings</h1>
+        <div class="app-card">
+          <div class="card-header">
+            <span class="card-title"><span class="card-icon">⚙</span> Settings</span>
+          </div>
+          <div class="card-body" style="display:flex; flex-direction:column; gap:var(--space-6);">
+
+            <!-- Profile -->
+            <div>
+              <div style="font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-4);">Profile</div>
+              <div style="display:flex; gap:var(--space-4); align-items:center; margin-bottom:var(--space-4);">
+                <div class="user-avatar" style="width:56px; height:56px; font-size:22px;" id="settings-avatar">Y</div>
+                <div style="flex:1;">
+                  <input type="text" id="settings-name" placeholder="Your name" value="You" style="background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; outline:none; font-family:inherit; width:100%; margin-bottom:8px;" />
+                  <input type="email" id="settings-email" placeholder="your@email.com" style="background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; outline:none; font-family:inherit; width:100%;" />
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" id="save-settings-btn">Save Profile</button>
+            </div>
+
+            <div style="border-top:1px solid var(--border-subtle);"></div>
+
+            <!-- AI Configuration -->
+            <div>
+              <div style="font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-4);">AI Configuration</div>
+              <div style="display:flex; flex-direction:column; gap:var(--space-4); margin-bottom:var(--space-4);">
+                <label style="font-size:14px; font-weight:500; color:var(--text-primary);">Groq API Key</label>
+                <input type="password" id="settings-api-key" placeholder="gsk_..." style="background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; outline:none; font-family:inherit; width:100%;" />
+                <div style="font-size:12px; color:var(--text-muted);">Get your free API key from <a href="https://console.groq.com/keys" target="_blank" style="color:var(--text-accent);">Groq Console</a>.</div>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-subtle);"></div>
+
+            <!-- Preferences -->
+            <div>
+              <div style="font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-4);">Preferences</div>
+              <div style="display:flex; flex-direction:column; gap:var(--space-4);">
+                
+                <label style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:var(--bg-elevated); border-radius:8px; border:1px solid var(--border-default); cursor:pointer;">
+                  <div>
+                    <div style="font-weight:600; color:var(--text-primary); font-size:14px;">Push Notifications</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Get native alerts for your reminders.</div>
+                  </div>
+                  <div class="toggle-switch" id="toggle-notifications" role="switch" aria-checked="false" tabindex="0" style="width:44px; height:24px; border-radius:12px; background:var(--neutral-700, #374151); position:relative; transition:0.3s;">
+                    <div style="width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:3px; right:calc(100% - 21px); transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>
+                  </div>
+                </label>
+
+                <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                  <div>
+                    <div style="font-size:14px; font-weight:500; color:var(--text-primary);">Daily Briefing</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Receive your morning briefing notification</div>
+                  </div>
+                  <div class="toggle-switch" id="toggle-briefing" role="switch" aria-checked="true" tabindex="0" style="width:44px;height:24px;background:var(--gradient-aurora);border-radius:999px;position:relative;cursor:pointer;flex-shrink:0;transition:background 0.2s;">
+                    <div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;top:3px;right:3px;transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+                  </div>
+                </label>
+
+                <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                  <div>
+                    <div style="font-size:14px; font-weight:500; color:var(--text-primary);">Serendipity Notifications</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Occasional memory resurfaces</div>
+                  </div>
+                  <div class="toggle-switch" id="toggle-serendipity" role="switch" aria-checked="true" tabindex="0" style="width:44px;height:24px;background:var(--gradient-aurora);border-radius:999px;position:relative;cursor:pointer;flex-shrink:0;transition:background 0.2s;">
+                    <div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;top:3px;right:3px;transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+                  </div>
+                </label>
+
+                <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                  <div>
+                    <div style="font-size:14px; font-weight:500; color:var(--text-primary);">AI Insights</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Pattern analysis and suggestions</div>
+                  </div>
+                  <div class="toggle-switch" id="toggle-insights" role="switch" aria-checked="true" tabindex="0" style="width:44px;height:24px;background:var(--gradient-aurora);border-radius:999px;position:relative;cursor:pointer;flex-shrink:0;transition:background 0.2s;">
+                    <div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;top:3px;right:3px;transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-subtle);"></div>
+
+            <!-- Danger zone -->
+            <div>
+              <div style="font-size:13px; font-weight:700; color:var(--error); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-4);">Danger Zone</div>
+              <button class="btn btn-secondary btn-sm" id="clear-data-btn" style="color:var(--error); border-color:rgba(239,68,68,0.3);">Clear All Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end app-content -->
+  </main>
+</div><!-- end app-layout -->
+
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Main App Logic -->
+<script src="js/rag.js"></script>
+<script src="js/app.js?v=4"></script>
+</body>
+</html>

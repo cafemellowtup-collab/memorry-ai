@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexMem — Your AI-Powered Second Brain</title>
+  <meta name="description" content="NexMem is the next-generation AI memory OS. Capture, organize, and recall everything — powered by intelligent AI that thinks ahead so you don't have to." />
+  <meta name="keywords" content="AI memory, second brain, reminders, productivity, AI assistant, NexMem" />
+  <meta property="og:title" content="NexMem — Your AI-Powered Second Brain" />
+  <meta property="og:description" content="Stop forgetting. Start thriving. NexMem is the AI memory layer that connects everything." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/landing.css" />
+</head>
+<body>
+
+<!-- =====================
+     PARTICLE CANVAS
+     ===================== -->
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+<!-- =====================
+     NAVBAR
+     ===================== -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" id="nav-logo-link">
+      <div class="logo-icon" aria-hidden="true">✦</div>
+      <span class="logo-text">NexMem</span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="#features" class="nav-link" id="nav-features">Features</a></li>
+      <li><a href="#how-it-works" class="nav-link" id="nav-how">How It Works</a></li>
+      <li><a href="#demo" class="nav-link" id="nav-demo">Demo</a></li>
+      <li><a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a href="app.html" class="btn btn-secondary btn-sm" id="nav-login">Sign In</a>
+      <a href="app.html" class="btn btn-primary btn-sm" id="nav-signup">Get Started Free</a>
+    </div>
+
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav" id="mobile-nav" role="menu">
+  <a href="#features" class="nav-link" id="mnav-features">Features</a>
+  <a href="#how-it-works" class="nav-link" id="mnav-how">How It Works</a>
+  <a href="#demo" class="nav-link" id="mnav-demo">Demo</a>
+  <a href="#pricing" class="nav-link" id="mnav-pricing">Pricing</a>
+  <a href="app.html" class="btn btn-primary" id="mnav-signup" style="margin-top: 8px;">Get Started Free</a>
+</div>
+
+<!-- =====================
+     HERO
+     ===================== -->
+<section class="hero" aria-labelledby="hero-headline">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-glow-3"></div>
+  </div>
+
+  <div class="hero-inner container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge badge-primary" id="hero-badge-text">
+          <span>✦</span> Next-Gen AI Memory OS
+        </span>
+      </div>
+
+      <h1 class="hero-headline" id="hero-headline">
+        <span class="line">Your second brain,</span>
+        <span class="line text-gradient">finally smart enough.</span>
+      </h1>
+
+      <p class="hero-sub">
+        NexMem doesn't just remind you — it <em>understands</em> you. An AI memory layer that captures your thoughts, organizes your life, and surfaces what matters exactly when you need it.
+      </p>
+
+      <div class="hero-actions">
+        <a href="app.html" class="btn btn-primary btn-lg" id="hero-cta-primary">
+          <span>Start for free</span>
+          <span>→</span>
+        </a>
+        <a href="#demo" class="btn btn-secondary btn-lg" id="hero-cta-demo">
+          <span>▶</span> See the demo
+        </a>
+      </div>
+
+      <div class="hero-social-proof">
+        <div class="avatar-stack" aria-label="User avatars">
+          <div class="avatar">A</div>
+          <div class="avatar">J</div>
+          <div class="avatar">M</div>
+          <div class="avatar">R</div>
+        </div>
+        <p class="social-proof-text">
+          <strong>12,000+ minds</strong> already amplified.<br/>
+          No credit card required.
+        </p>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hero-ui-mockup">
+        <img src="assets/dashboard_preview.svg" alt="NexMem app dashboard preview" id="hero-mockup-img" onerror="this.style.display='none'; document.getElementById('hero-fallback').style.display='flex';" />
+        <div id="hero-fallback" style="display:none; padding: 40px; flex-direction: column; gap: 20px; min-height: 400px;">
+          <!-- Inline fallback UI -->
+          <div style="display:flex; align-items:center; gap:12px; padding:16px; background:rgba(124,58,237,0.1); border-radius:12px; border:1px solid rgba(124,58,237,0.2);">
+            <span style="font-size:28px;">🧠</span>
+            <div>
+              <div style="font-weight:700; color:#f1f0ff; margin-bottom:4px;">Good morning! Ready to conquer today?</div>
+              <div style="font-size:13px; color:#a09ec7;">3 reminders · 2 meetings · 1 insight waiting</div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="padding:16px; background:rgba(255,255,255,0.04); border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
+              <div style="font-size:11px; color:#6b6990; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Reminders</div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:13px; color:#a09ec7; display:flex; gap:8px; align-items:center;"><span style="color:#7c3aed;">●</span> Call dentist · 10am</div>
+                <div style="font-size:13px; color:#a09ec7; display:flex; gap:8px; align-items:center;"><span style="color:#06b6d4;">●</span> Review proposal · 2pm</div>
+                <div style="font-size:13px; color:#a09ec7; display:flex; gap:8px; align-items:center;"><span style="color:#10b981;">●</span> Gym session · 6pm</div>
+              </div>
+            </div>
+            <div style="padding:16px; background:rgba(255,255,255,0.04); border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
+              <div style="font-size:11px; color:#6b6990; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">AI Insight</div>
+              <div style="font-size:13px; color:#a09ec7; line-height:1.5;">🌟 You've been most productive on Fridays. Consider scheduling important work today.</div>
+            </div>
+          </div>
+          <div style="padding:12px 16px; background:rgba(255,255,255,0.04); border-radius:40px; border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:12px;">
+            <span style="font-size:14px; color:#6b6990; flex:1;">Ask NexMem anything...</span>
+            <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#06b6d4); display:flex; align-items:center; justify-content:center; font-size:14px;">✦</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating cards -->
+      <div class="floating-card floating-card-1" aria-hidden="true">
+        <div class="fc-icon purple">🔔</div>
+        <div>
+          <div class="fc-title">Reminder set!</div>
+          <div class="fc-sub">Meeting at 3pm · Today</div>
+        </div>
+      </div>
+
+      <div class="floating-card floating-card-2" aria-hidden="true">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em;">📚 Recent Memories</div>
+        <div class="fc-memory-list">
+          <div class="fc-memory-item"><span class="fc-dot"></span> Project deadline: Aug 15</div>
+          <div class="fc-memory-item"><span class="fc-dot cyan"></span> Book rec: Atomic Habits</div>
+          <div class="fc-memory-item"><span class="fc-dot green"></span> Gym goal: 3x per week</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     STATS
+     ===================== -->
+<section class="stats-section" aria-label="Statistics">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item reveal">
+        <div class="stat-number" data-count="12000" id="stat-1">0</div>
+        <div class="stat-label">Active Users</div>
+      </div>
+      <div class="stat-item reveal delay-1">
+        <div class="stat-number" data-count="98" id="stat-2">0</div>
+        <div class="stat-label">% Satisfaction</div>
+      </div>
+      <div class="stat-item reveal delay-2">
+        <div class="stat-number" data-count="5000000" id="stat-3">0</div>
+        <div class="stat-label">Memories Stored</div>
+      </div>
+      <div class="stat-item reveal delay-3">
+        <div class="stat-number" data-count="4" id="stat-4">0</div>
+        <div class="stat-label">Avg. Hours Saved / Week</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     HOW IT WORKS
+     ===================== -->
+<section class="section" id="how-it-works" aria-labelledby="how-title">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge reveal">
+        <span class="badge badge-cyan">How It Works</span>
+      </div>
+      <h2 class="section-title reveal delay-1" id="how-title">Simple as thinking out loud</h2>
+      <p class="section-sub reveal delay-2">No learning curve. Just talk to NexMem like you'd talk to a brilliant friend who never forgets anything.</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <div class="step-number p">1</div>
+        <div class="step-emoji">💬</div>
+        <h3 class="step-title">Tell NexMem anything</h3>
+        <p class="step-desc">Speak or type naturally. "Remind me to call mom on Sunday" or "Remember that book Sarah recommended." NexMem understands context and intent.</p>
+      </div>
+
+      <div class="step-card reveal delay-2">
+        <div class="step-number c">2</div>
+        <div class="step-emoji">⚡</div>
+        <h3 class="step-title">AI processes & organizes</h3>
+        <p class="step-desc">Our AI extracts dates, priorities, people, and context. It connects related memories, spots patterns in your life, and builds your intelligent memory graph.</p>
+      </div>
+
+      <div class="step-card reveal delay-4">
+        <div class="step-number f">3</div>
+        <div class="step-emoji">✨</div>
+        <h3 class="step-title">NexMem surfaces it perfectly</h3>
+        <p class="step-desc">Get reminders at the right moment, daily briefings each morning, and serendipitous memory resurfaces that spark ideas you'd forgotten you had.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     FEATURES
+     ===================== -->
+<section class="section features-section" id="features" aria-labelledby="features-title">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge reveal">
+        <span class="badge badge-primary">Features</span>
+      </div>
+      <h2 class="section-title reveal delay-1" id="features-title">Everything your brain needs</h2>
+      <p class="section-sub reveal delay-2">Built on the intersection of AI, psychology, and great design — to actually work the way your mind does.</p>
+    </div>
+
+    <div class="features-grid">
+      <!-- Featured card -->
+      <div class="feature-card featured reveal">
+        <div class="feature-icon-wrap purple">🧠</div>
+        <h3 class="feature-title">AI Context Memory <span class="feature-new">New</span></h3>
+        <p class="feature-desc">Unlike basic reminder apps, NexMem builds a persistent model of you — your preferences, habits, relationships, and goals. The longer you use it, the smarter it gets. It remembers that you prefer morning meetings, that "the client" means Acme Corp, and that you've been trying to drink more water.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon-wrap cyan">🔔</div>
+        <h3 class="feature-title">Smart Reminders</h3>
+        <p class="feature-desc">Set reminders with natural language. Recurring, one-time, or context-triggered. "Remind me about this when I'm near the grocery store."</p>
+      </div>
+
+      <div class="feature-card reveal delay-1">
+        <div class="feature-icon-wrap fuchsia">☀️</div>
+        <h3 class="feature-title">Daily Briefings</h3>
+        <p class="feature-desc">Wake up to a personalized morning briefing — your meetings, tasks, weather context, and a motivational memory from your past all in one card.</p>
+      </div>
+
+      <div class="feature-card reveal delay-1">
+        <div class="feature-icon-wrap amber">✨</div>
+        <h3 class="feature-title">Serendipity Engine <span class="feature-new">New</span></h3>
+        <p class="feature-desc">Our AI periodically resurfaces your old notes, ideas, and memories at moments when they become newly relevant. Like déjà vu, but useful.</p>
+      </div>
+
+      <div class="feature-card reveal delay-2">
+        <div class="feature-icon-wrap emerald">📋</div>
+        <h3 class="feature-title">Second Brain Notes</h3>
+        <p class="feature-desc">Go beyond reminders. Capture long-form thoughts, ideas, and knowledge. NexMem links related notes automatically, building your personal knowledge base.</p>
+      </div>
+
+      <div class="feature-card reveal delay-2">
+        <div class="feature-icon-wrap rose">🎯</div>
+        <h3 class="feature-title">Focus Modes <span class="feature-new">New</span></h3>
+        <p class="feature-desc">Activate Deep Work, Flow State, or Recovery mode. NexMem adjusts notification frequency, surfaces only what matters, and tracks your focus hours.</p>
+      </div>
+
+      <div class="feature-card reveal delay-3">
+        <div class="feature-icon-wrap purple">📅</div>
+        <h3 class="feature-title">Calendar Sync</h3>
+        <p class="feature-desc">Connects with Google Calendar, Outlook, and Apple Calendar. NexMem understands your schedule and plans around your existing commitments automatically.</p>
+      </div>
+
+      <div class="feature-card reveal delay-3">
+        <div class="feature-icon-wrap cyan">👥</div>
+        <h3 class="feature-title">Friend Reminders</h3>
+        <p class="feature-desc">Send accountability reminders to friends or receive gentle nudges on their behalf. Stay connected without the awkward nagging conversations.</p>
+      </div>
+
+      <div class="feature-card reveal delay-4">
+        <div class="feature-icon-wrap amber">😊</div>
+        <h3 class="feature-title">Mood & Energy Tracking <span class="feature-new">New</span></h3>
+        <p class="feature-desc">Log your daily mood and energy levels. NexMem correlates this data with your schedule and activities to help you discover your personal peak performance patterns.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     AI DEMO
+     ===================== -->
+<section class="section demo-section" id="demo" aria-labelledby="demo-title">
+  <div class="container">
+    <div class="demo-container">
+      <div class="demo-content reveal-left">
+        <span class="badge badge-primary" style="width:fit-content;">⚡ Live Demo</span>
+        <h2 class="demo-title" id="demo-title">Talk to NexMem.<br/>Experience the future.</h2>
+        <p class="demo-desc">Try the AI chat below. Ask it to set a reminder, recall information, plan your day — it responds instantly and intelligently.</p>
+
+        <div class="demo-features">
+          <div class="demo-feature">
+            <div class="demo-feature-icon">💬</div>
+            <div class="demo-feature-text">
+              <h4>Natural Language</h4>
+              <p>Speak in plain English — no special syntax required</p>
+            </div>
+          </div>
+          <div class="demo-feature">
+            <div class="demo-feature-icon">🔗</div>
+            <div class="demo-feature-text">
+              <h4>Context-Aware</h4>
+              <p>Remembers the full conversation and connects to your past memories</p>
+            </div>
+          </div>
+          <div class="demo-feature">
+            <div class="demo-feature-icon">⚡</div>
+            <div class="demo-feature-text">
+              <h4>Instant Response</h4>
+              <p>Sub-second AI processing with streaming responses</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-widget reveal-right" id="demo-chat-widget" role="region" aria-label="AI demo chat">
+        <div class="chat-header">
+          <div class="chat-header-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="chat-header-title">✦ NexMem AI — Demo</div>
+        </div>
+
+        <div class="chat-messages" id="demo-messages" role="log" aria-live="polite">
+          <!-- Initial message -->
+          <div class="chat-msg ai" id="msg-0">
+            <div class="msg-avatar ai" aria-label="NexMem AI">✦</div>
+            <div class="msg-bubble">
+              Hi! I'm NexMem ✨ Your AI memory assistant. Ask me to set a reminder, store a note, plan your day, or anything else. Try one of the prompts below!
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-prompts" id="quick-prompts" role="group" aria-label="Quick prompts">
+          <button class="quick-prompt" id="qp-1">🔔 Set a reminder</button>
+          <button class="quick-prompt" id="qp-2">☀️ Plan my day</button>
+          <button class="quick-prompt" id="qp-3">📝 Save a note</button>
+          <button class="quick-prompt" id="qp-4">🧠 What do you remember?</button>
+        </div>
+
+        <div class="chat-input-area">
+          <input
+            class="chat-input"
+            id="demo-chat-input"
+            type="text"
+            placeholder="Ask NexMem anything..."
+            aria-label="Chat input"
+            autocomplete="off"
+          />
+          <button class="chat-send-btn" id="demo-send-btn" aria-label="Send message">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     PRICING
+     ===================== -->
+<section class="section pricing-section" id="pricing" aria-labelledby="pricing-title">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge reveal">
+        <span class="badge badge-cyan">Pricing</span>
+      </div>
+      <h2 class="section-title reveal delay-1" id="pricing-title">Simple, honest pricing</h2>
+      <p class="section-sub reveal delay-2">Start free. Upgrade when NexMem becomes indispensable — and it will.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="pricing-card reveal">
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price">
+          <span class="price-amount">$0</span>
+          <span class="price-period">/ forever</span>
+        </div>
+        <p class="pricing-desc">Perfect for getting started with your AI memory companion.</p>
+        <ul class="pricing-features">
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> 100 memories / month</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Basic reminders</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Daily briefings</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> 3 lists</li>
+          <li class="pricing-feature"><span class="check-icon no">—</span> AI Context Memory</li>
+          <li class="pricing-feature"><span class="check-icon no">—</span> Serendipity Engine</li>
+          <li class="pricing-feature"><span class="check-icon no">—</span> Focus Modes</li>
+          <li class="pricing-feature"><span class="check-icon no">—</span> Calendar sync</li>
+        </ul>
+        <a href="app.html" class="btn btn-secondary" id="plan-starter">Start free →</a>
+      </div>
+
+      <!-- Pro - Popular -->
+      <div class="pricing-card popular reveal delay-1">
+        <div class="pricing-badge"></div>
+        <div class="pricing-plan">Pro</div>
+        <div class="pricing-price">
+          <span class="price-amount text-gradient">$9</span>
+          <span class="price-period">/ month</span>
+        </div>
+        <p class="pricing-desc">For power users who want the full second-brain experience.</p>
+        <ul class="pricing-features">
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Unlimited memories</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Smart reminders + recurring</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Daily briefings + insights</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Unlimited lists</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> AI Context Memory</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Serendipity Engine</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Focus Modes + tracking</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Calendar sync (all calendars)</li>
+        </ul>
+        <a href="app.html" class="btn btn-primary" id="plan-pro">Get Pro →</a>
+      </div>
+
+      <!-- Team -->
+      <div class="pricing-card reveal delay-2">
+        <div class="pricing-plan">Team</div>
+        <div class="pricing-price">
+          <span class="price-amount">$19</span>
+          <span class="price-period">/ user/mo</span>
+        </div>
+        <p class="pricing-desc">For teams that want a shared AI memory layer across their whole organization.</p>
+        <ul class="pricing-features">
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Everything in Pro</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Shared team memories</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Team briefings</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Admin dashboard</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> SSO + SAML</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Priority support</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> API access</li>
+          <li class="pricing-feature"><span class="check-icon yes">✓</span> Custom integrations</li>
+        </ul>
+        <a href="app.html" class="btn btn-secondary" id="plan-team">Contact sales →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     TESTIMONIALS
+     ===================== -->
+<section class="section testimonials-section" aria-labelledby="testimonials-title">
+  <div class="container" style="margin-bottom: var(--space-8);">
+    <div class="section-header">
+      <div class="section-badge reveal">
+        <span class="badge badge-primary">Testimonials</span>
+      </div>
+      <h2 class="section-title reveal delay-1" id="testimonials-title">Loved by thousands of minds</h2>
+    </div>
+  </div>
+
+  <div class="testimonials-wrapper">
+    <div class="testimonials-track" id="testimonials-track" role="list" aria-label="User testimonials">
+      <!-- Cards duplicated for infinite loop -->
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"NexMem is like having a perfect personal assistant. It remembers things I forgot I even thought of. The serendipity feature brought back an idea from 6 months ago that became our best product feature."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:white;">S</div>
+          <div>
+            <div class="testimonial-name">Sarah Chen</div>
+            <div class="testimonial-role">Product Manager, Stripe</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"I switched from Notion + Todoist + Google Calendar to just NexMem. The AI context memory is uncanny — it knows I prefer afternoon calls and automatically suggests those times."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#06b6d4,#0891b2); color:white;">M</div>
+          <div>
+            <div class="testimonial-name">Marcus Johnson</div>
+            <div class="testimonial-role">Founder, TechFlow</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The Focus Modes are a game changer. When I'm in Deep Work mode, NexMem holds all non-urgent reminders and delivers a clean summary when I'm done. My focus hours have doubled."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#e879f9,#d946ef); color:white;">A</div>
+          <div>
+            <div class="testimonial-name">Aisha Patel</div>
+            <div class="testimonial-role">Writer & Content Strategist</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"As someone with ADHD, remembering things has always been my biggest challenge. NexMem isn't just an app — it's changed my relationship with my own memory. Genuinely life-changing."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white;">D</div>
+          <div>
+            <div class="testimonial-name">David Kim</div>
+            <div class="testimonial-role">Software Engineer, Meta</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The morning briefing alone is worth the subscription. I wake up knowing exactly what my day looks like, what I planned last week, and what insights NexMem has spotted in my patterns."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#10b981,#059669); color:white;">L</div>
+          <div>
+            <div class="testimonial-name">Laura Martínez</div>
+            <div class="testimonial-role">COO, GrowthLabs</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Our whole team uses NexMem. The shared team briefings mean we start every standup already aligned. We've cut meeting time by 40% since adopting it."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#7c3aed,#06b6d4); color:white;">R</div>
+          <div>
+            <div class="testimonial-name">Ryan Torres</div>
+            <div class="testimonial-role">Engineering Lead, Vercel</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Duplicated for seamless loop -->
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"NexMem is like having a perfect personal assistant. It remembers things I forgot I even thought of. The serendipity feature brought back an idea from 6 months ago that became our best product feature."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:white;">S</div>
+          <div>
+            <div class="testimonial-name">Sarah Chen</div>
+            <div class="testimonial-role">Product Manager, Stripe</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"I switched from Notion + Todoist + Google Calendar to just NexMem. The AI context memory is uncanny — it knows I prefer afternoon calls and automatically suggests those times."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#06b6d4,#0891b2); color:white;">M</div>
+          <div>
+            <div class="testimonial-name">Marcus Johnson</div>
+            <div class="testimonial-role">Founder, TechFlow</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" role="listitem">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The Focus Modes are a game changer. When I'm in Deep Work mode, NexMem holds all non-urgent reminders and delivers a clean summary when I'm done. My focus hours have doubled."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#e879f9,#d946ef); color:white;">A</div>
+          <div>
+            <div class="testimonial-name">Aisha Patel</div>
+            <div class="testimonial-role">Writer & Content Strategist</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     CTA
+     ===================== -->
+<section class="cta-section" aria-labelledby="cta-title">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="container">
+    <div class="cta-inner reveal">
+      <h2 class="cta-title" id="cta-title">
+        Your second brain<br/>
+        <span class="text-gradient-alt">starts today.</span>
+      </h2>
+      <p class="cta-sub">Join 12,000+ people who've already amplified their mind with NexMem.</p>
+      <div class="cta-actions">
+        <a href="app.html" class="btn btn-primary btn-lg" id="cta-primary">
+          Start for free — no credit card
+        </a>
+        <a href="#demo" class="btn btn-secondary btn-lg" id="cta-demo">Watch demo ▶</a>
+      </div>
+      <p class="cta-note">✓ Free forever plan &nbsp;&nbsp; ✓ No credit card &nbsp;&nbsp; ✓ Setup in 60 seconds</p>
+    </div>
+  </div>
+</section>
+
+<!-- =====================
+     FOOTER
+     ===================== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="width:fit-content;" id="footer-logo">
+          <div class="logo-icon" aria-hidden="true">✦</div>
+          <span class="logo-text">NexMem</span>
+        </a>
+        <p class="footer-tagline">Your AI-powered second brain. Capture everything, forget nothing, understand more.</p>
+        <div class="footer-social" aria-label="Social media links">
+          <a href="#" class="social-btn" id="social-twitter" aria-label="Twitter">𝕏</a>
+          <a href="#" class="social-btn" id="social-linkedin" aria-label="LinkedIn">in</a>
+          <a href="#" class="social-btn" id="social-github" aria-label="GitHub">⌥</a>
+          <a href="#" class="social-btn" id="social-discord" aria-label="Discord">◈</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links" role="list">
+          <li><a href="#features" class="footer-link" id="ft-features">Features</a></li>
+          <li><a href="#pricing" class="footer-link" id="ft-pricing">Pricing</a></li>
+          <li><a href="app.html" class="footer-link" id="ft-app">Dashboard</a></li>
+          <li><a href="#" class="footer-link" id="ft-changelog">Changelog</a></li>
+          <li><a href="#" class="footer-link" id="ft-roadmap">Roadmap</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links" role="list">
+          <li><a href="#" class="footer-link" id="ft-about">About</a></li>
+          <li><a href="#" class="footer-link" id="ft-blog">Blog</a></li>
+          <li><a href="#" class="footer-link" id="ft-careers">Careers</a></li>
+          <li><a href="#" class="footer-link" id="ft-press">Press</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links" role="list">
+          <li><a href="#" class="footer-link" id="ft-privacy">Privacy Policy</a></li>
+          <li><a href="#" class="footer-link" id="ft-terms">Terms of Service</a></li>
+          <li><a href="#" class="footer-link" id="ft-security">Security</a></li>
+          <li><a href="#" class="footer-link" id="ft-cookies">Cookie Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 NexMem, Inc. All rights reserved. Built with ✦ and AI.</p>
+      <div class="footer-social" aria-hidden="true">
+        <span style="font-size:13px; color:var(--text-muted);">Made for minds that never stop thinking.</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/landing.js"></script>
+</body>
+</html>
