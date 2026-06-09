@@ -1493,11 +1493,14 @@ async function syncWithCloud() {
           const merged = new Map(state.reminders.map(r => [r.id, r]));
           cloudState.reminders.forEach(cr => merged.set(cr.id, cr)); // Cloud overwrites local if same ID
           state.reminders = Array.from(merged.values());
+          // Sort so newest created items are always at the top
+          state.reminders.sort((a, b) => b.id - a.id);
         }
         if (cloudState.lists) {
           const merged = new Map(state.lists.map(l => [l.id, l]));
           cloudState.lists.forEach(cl => merged.set(cl.id, cl));
           state.lists = Array.from(merged.values());
+          state.lists.sort((a, b) => b.id - a.id);
         }
         if (cloudState.chatHistory) {
           // Chat history usually doesn't have IDs, so we merge by timestamp or just take cloud if it's longer
