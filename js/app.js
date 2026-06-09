@@ -1001,15 +1001,17 @@ GUIDELINES:
       msg.className = 'chat-msg ai';
       const av     = document.createElement('div');
       av.className  = 'msg-avatar ai';
-      av.textContent = '✦';
+      av.textContent = '✨';
       av.setAttribute('aria-label', 'NexMem AI');
       const bub    = document.createElement('div');
       bub.className = 'msg-bubble';
+      const textContainer = document.createElement('div');
+      bub.appendChild(textContainer);
       msg.appendChild(av);
       msg.appendChild(bub);
       messages.appendChild(msg);
       messages.scrollTop = messages.scrollHeight;
-      streamTextIntoBubble(bub, replyText);
+      streamTextIntoBubble(textContainer, replyText);
 
       state.chatHistory.push({ text: replyText, role: 'ai' });
       saveState();
@@ -1787,26 +1789,33 @@ function startReminderChecker(registration) {
   }, 60000); // Check every 60,000 ms (1 minute)
 }
 
-function renderActionWidget(container, icon, title, isActive) {
+function renderActionWidget(container, icon, title, initialActive, toggleCallback) {
   if (!container) return;
   const widget = document.createElement('div');
-  widget.style.cssText = "margin-top: 12px; padding: 12px; background: var(--bg-elevated); border-radius: 12px; border: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; animation: scaleIn 0.3s ease;";
+  widget.style.cssText = "margin-top: 12px; padding: 12px; background: var(--bg-elevated); border-radius: 12px; border: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; animation: scaleIn 0.3s ease; cursor: pointer;";
   
-  const toggleBg = isActive ? "var(--gradient-aurora)" : "var(--neutral-700, #374151)";
-  const toggleKnobPos = isActive ? "right: 3px;" : "left: 3px;";
+  let isActive = initialActive;
   
-  widget.innerHTML = `
+  const renderToggle = () => `
     <div style="display: flex; align-items: center; gap: 8px;">
       <span style="font-size: 20px;">${icon}</span>
       <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${title}</span>
     </div>
-    <div style="width: 44px; height: 24px; background: ${toggleBg}; border-radius: 999px; position: relative; transition: all 0.3s;">
-      <div style="width: 18px; height: 18px; background: white; border-radius: 50%; position: absolute; top: 3px; ${toggleKnobPos} transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>
+    <div style="width: 44px; height: 24px; background: ${isActive ? "var(--gradient-aurora)" : "var(--neutral-700, #374151)"}; border-radius: 999px; position: relative; transition: all 0.3s;">
+      <div style="width: 18px; height: 18px; background: white; border-radius: 50%; position: absolute; top: 3px; ${isActive ? "right: 3px;" : "left: 3px;"} transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>
     </div>
   `;
+  
+  widget.innerHTML = renderToggle();
+  
+  widget.addEventListener('click', () => {
+    isActive = !isActive;
+    widget.innerHTML = renderToggle();
+    if (toggleCallback) toggleCallback(isActive);
+  });
+  
   container.appendChild(widget);
   
-  // Scroll to bottom after injecting
   const messages = document.getElementById('chat-messages');
   if (messages) messages.scrollTop = messages.scrollHeight;
 }
@@ -1818,41 +1827,69 @@ function executeAIAction(action, container) {
   switch (action) {
     case 'ENABLE_DEEP_WORK':
       if (typeof window.setFocusMode === 'function') window.setFocusMode('deep');
-      renderActionWidget(container, '🧠', 'Deep Work', true);
+      renderActionWidget(container, '🧠', 'Deep Work', true, (active) => {
+        if (typeof window.setFocusMode === 'function') window.setFocusMode(active ? 'deep' : 'off');
+      });
       break;
     case 'ENABLE_FLOW':
       if (typeof window.setFocusMode === 'function') window.setFocusMode('flow');
-      renderActionWidget(container, '🌊', 'Flow State', true);
+      renderActionWidget(container, '🌊', 'Flow State', true, (active) => {
+        if (typeof window.setFocusMode === 'function') window.setFocusMode(active ? 'flow' : 'off');
+      });
       break;
     case 'ENABLE_REST':
       if (typeof window.setFocusMode === 'function') window.setFocusMode('rest');
-      renderActionWidget(container, '☕', 'Rest Mode', true);
+      renderActionWidget(container, '☕', 'Rest Mode', true, (active) => {
+        if (typeof window.setFocusMode === 'function') window.setFocusMode(active ? 'rest' : 'off');
+      });
       break;
     case 'DISABLE_FOCUS':
       if (typeof window.setFocusMode === 'function') window.setFocusMode('off');
-      renderActionWidget(container, '🎯', 'Focus Mode', false);
+      renderActionWidget(container, '🎯', 'Focus Mode', false, (active) => {
+        if (typeof window.setFocusMode === 'function') window.setFocusMode(active ? 'deep' : 'off');
+      });
       break;
     case 'DARK_MODE':
       document.documentElement.setAttribute('data-theme', 'dark');
       state.settings.theme = 'dark';
       saveState();
-      renderActionWidget(container, '🌙', 'Dark Mode', true);
+      renderActionWidget(container, '🌙', 'Dark Mode', true, (active) => {
+        const t = active ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        state.settings.theme = t;
+        saveState();
+      });
       break;
     case 'LIGHT_MODE':
       document.documentElement.setAttribute('data-theme', 'light');
       state.settings.theme = 'light';
       saveState();
-      renderActionWidget(container, '☀️', 'Light Mode', true);
+      renderActionWidget(container, '☀️', 'Light Mode', true, (active) => {
+        const t = active ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        state.settings.theme = t;
+        saveState();
+      });
       break;
     case 'ENABLE_NOTIFICATIONS':
       state.settings.notifications = true;
       saveState();
-      renderActionWidget(container, '🔔', 'Notifications', true);
+      renderActionWidget(container, '🔔', 'Notifications', true, (active) => {
+        state.settings.notifications = active;
+        saveState();
+      });
       break;
     case 'DISABLE_NOTIFICATIONS':
       state.settings.notifications = false;
       saveState();
-      renderActionWidget(container, '🔕', 'Notifications', false);
+      renderActionWidget(container, '🔕', 'Notifications', false, (active) => {
+        state.settings.notifications = !active; // if active is true, it means they toggled the "Disable Notifications" switch ON, which means notifications are OFF. Wait, active means the widget is "ON". So if the widget is "Notifications Disabled", active=true means notifications=false. Let's name the widget "Disable Notifications" or just "Notifications".
+        // Actually, the widget says "Notifications". So if active=true, notifications=true.
+        // Wait, action is "DISABLE_NOTIFICATIONS", so initialActive is false.
+        // If they click it, active becomes true. So notifications = true.
+        state.settings.notifications = active;
+        saveState();
+      });
       break;
     case 'CLEAR_COMPLETED':
       state.reminders = state.reminders.filter(r => !r.done);
