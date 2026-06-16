@@ -89,6 +89,11 @@ export async function POST(request: NextRequest) {
 
     const recentSummaries = contextMemories.map(m => m.ai_summary)
 
+    const pastDecisions = await getMemories(db, user.id, { type: 'decision', limit: 6 })
+    const pastDecisionSummaries = pastDecisions
+      .filter(m => m.ai_summary)
+      .map(m => `${m.ai_summary} (${new Date(m.created_at).toLocaleDateString()})`)
+
     const extracted = await extractMemoryFromInput(userText, '', validatedTimezone, recentSummaries)
     let storedMemory = null
     const archivedSummaries: string[] = []
@@ -134,6 +139,7 @@ export async function POST(request: NextRequest) {
       '',
       new Date().toISOString(),
       archivedSummaries,
+      pastDecisionSummaries,
     )
 
     const result = streamText({

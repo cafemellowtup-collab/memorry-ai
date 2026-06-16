@@ -1,11 +1,12 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { BarChart3, TrendingUp, Brain, Zap, Archive, Clock } from 'lucide-react'
+import { BarChart3, TrendingUp, Brain, Zap, Archive, Clock, Scale } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import type { MemoryRow } from '@/lib/db/types'
 
 async function fetchRecentMemories(): Promise<MemoryRow[]> {
@@ -42,6 +43,9 @@ const TYPE_COLORS: Record<string, string> = {
   insight: 'bg-cyan-500/10 text-cyan-400',
 }
 
+const IMPORTANCE_LABELS = ['', 'Low', 'Low', 'Medium', 'High', 'Critical']
+const IMPORTANCE_COLORS = ['', 'text-muted-foreground', 'text-muted-foreground', 'text-blue-400', 'text-amber-400', 'text-red-400']
+
 export default function InsightsPage() {
   const { data: memories = [], isLoading } = useQuery({
     queryKey: ['memories', 'insights'],
@@ -58,6 +62,14 @@ export default function InsightsPage() {
     const d = new Date(m.created_at)
     return Date.now() - d.getTime() < 7 * 24 * 60 * 60 * 1000
   }).length
+
+  const decisions = memories
+    .filter(m => m.type === 'decision')
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  const avgDecisionImportance = decisions.length
+    ? decisions.reduce((s, m) => s + (m.importance ?? 3), 0) / decisions.length
+    : 0
+  const highStakesDecisions = decisions.filter(m => m.importance >= 4).length
 
   if (isLoading) {
     return (
@@ -153,6 +165,51 @@ export default function InsightsPage() {
                         )
                       })}
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Decision patterns */}
+            {decisions.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2 pt-4">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Scale className="h-4 w-4 text-muted-foreground" />
+                    Decision patterns
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
+                    <span>{decisions.length} decision{decisions.length !== 1 ? 's' : ''} made</span>
+                    <span>·</span>
+                    <span>Avg importance {avgDecisionImportance.toFixed(1)}/5</span>
+                    {highStakesDecisions > 0 && (
+                      <>
+                        <span>·</span>
+                        <span className="text-amber-400">{highStakesDecisions} high-stakes</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {decisions.slice(0, 5).map((d) => (
+                      <div key={d.id} className="flex items-start gap-2.5 text-sm">
+                        <span className="text-muted-foreground text-xs w-16 flex-shrink-0 mt-0.5">
+                          {new Date(d.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                        <p className="flex-1 leading-relaxed">{d.ai_summary ?? d.raw_input}</p>
+                        {d.importance >= 4 && (
+                          <span className={cn('text-[10px] font-medium flex-shrink-0', IMPORTANCE_COLORS[d.importance])}>
+                            {IMPORTANCE_LABELS[d.importance]}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {decisions.length > 5 && (
+                    <p className="text-xs text-muted-foreground mt-3">
+                      +{decisions.length - 5} more — see the Decisions tab on Memories
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             )}

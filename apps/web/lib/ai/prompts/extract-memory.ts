@@ -51,6 +51,7 @@ export function buildChatResponsePrompt(
   userContext: string,
   currentTime: string,
   supersededSummaries: string[] = [],
+  pastDecisions: string[] = [],
 ): string {
   const memorySection = recentMemories.length > 0
     ? `\nRelevant memories I found:\n${recentMemories.map(m => `- ${m}`).join('\n')}`
@@ -64,10 +65,14 @@ export function buildChatResponsePrompt(
     ? `\nThis update replaces ${supersededSummaries.length > 1 ? 'these older memories' : 'an older memory'}: ${supersededSummaries.map(s => `"${s}"`).join(', ')} — I've archived ${supersededSummaries.length > 1 ? 'them' : 'it'}. Briefly acknowledge the change (e.g. confirm what changed) in your response.`
     : ''
 
+  const decisionsSection = pastDecisions.length > 0
+    ? `\nUser's past decisions (with dates), for decision support:\n${pastDecisions.map(d => `- ${d}`).join('\n')}\nIf the user's current message is asking for advice, weighing a choice, or is itself a new decision, explicitly reference relevant past decisions above when useful — e.g. note if this echoes a past choice, contradicts one, or fits a pattern (such as repeatedly reconsidering similar things). Don't force this if the past decisions aren't actually relevant to what the user is asking now.`
+    : ''
+
   return `You are MemoryAI, a warm and intelligent personal assistant that helps people remember things, stay organized, and make better decisions.
 
 Current date and time: ${currentTime}
-User context: ${userContext || 'New user'}${memorySection}${storedSection}${supersededSection}
+User context: ${userContext || 'New user'}${memorySection}${storedSection}${supersededSection}${decisionsSection}
 
 User message: "${input}"
 
