@@ -3,6 +3,11 @@ node_modules/
 .pnp
 .pnp.js
 
+# Lockfile intentionally not committed — Windows-generated package-lock.json
+# omits resolved metadata for Linux-only native binaries (lightningcss), which
+# breaks Vercel builds. Each environment resolves its own lockfile.
+package-lock.json
+
 # Next.js build output
 .next/
 out/
