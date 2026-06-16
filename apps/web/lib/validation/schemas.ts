@@ -34,14 +34,24 @@ export const ChatMessageSchema = z.object({
 })
 export type ChatMessageInput = z.infer<typeof ChatMessageSchema>
 
+export const EntityTypeSchema = z.enum(['person', 'place', 'project', 'habit', 'topic'])
+export type EntityType = z.infer<typeof EntityTypeSchema>
+
+export const ExtractedEntitySchema = z.object({
+  name: z.string(),
+  type: EntityTypeSchema,
+})
+export type ExtractedEntity = z.infer<typeof ExtractedEntitySchema>
+
 export const ExtractedMemorySchema = z.object({
   summary: z.string(),
   type: MemoryTypeSchema,
   tags: z.array(z.string()),
-  entities: z.array(z.string()),
+  entities: z.array(ExtractedEntitySchema),
   remind_at: z.string().datetime().nullable(),
   remind_repeat: z.enum(['daily', 'weekly', 'monthly', 'yearly']).nullable(),
   importance: z.number().int().min(1).max(5),
   should_store: z.boolean(),
+  supersedes_summaries: z.array(z.string()),
 })
 export type ExtractedMemory = z.infer<typeof ExtractedMemorySchema>

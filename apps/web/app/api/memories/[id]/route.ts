@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createSupabaseServer } from '@/lib/db/supabase'
+import { createSupabaseServer } from '@/lib/db/supabase-server'
 import { getMemoryById, updateMemory, deleteMemory } from '@/lib/db/queries/memories'
 import { UpdateMemorySchema } from '@/lib/validation/schemas'
 import { unauthorized, handleApiError } from '@/lib/utils/errors'

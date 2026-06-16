@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createSupabaseServer } from '@/lib/db/supabase'
+import { createSupabaseServer } from '@/lib/db/supabase-server'
 import { generateEmbedding } from '@/lib/ai/embeddings'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { unauthorized, rateLimited, handleApiError } from '@/lib/utils/errors'
@@ -9,7 +9,7 @@ import type { MemoryRow } from '@/lib/db/types'
 const SearchSchema = z.object({
   q: z.string().min(1).max(500),
   limit: z.coerce.number().int().min(1).max(20).default(10),
-  threshold: z.coerce.number().min(0).max(1).default(0.7),
+  threshold: z.coerce.number().min(0).max(1).default(0.5),
 })
 
 export async function GET(request: NextRequest) {

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServer } from "@/lib/db/supabase";
+import { createSupabaseServer } from "@/lib/db/supabase-server";
 
 export default async function HomePage() {
   const db = await createSupabaseServer();

@@ -28,6 +28,7 @@ export interface MemoryInsert {
   user_id: string
   raw_input: string
   ai_summary?: string | null
+  embedding?: string | null
   type?: MemoryType
   tags?: string[]
   importance?: number

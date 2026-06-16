@@ -5,7 +5,7 @@ import { LogOut, Moon, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { createSupabaseBrowser } from '@/lib/db/supabase'
+import { createSupabaseBrowser } from '@/lib/db/supabase-browser'
 
 export default function SettingsPage() {
   const router = useRouter()

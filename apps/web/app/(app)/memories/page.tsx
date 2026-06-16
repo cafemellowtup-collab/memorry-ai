@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Archive, Bell, Users, Lightbulb, BookOpen, RefreshCw, Tag } from 'lucide-react'
+import { Search, Archive, Bell, Users, Lightbulb, BookOpen, RefreshCw, Tag, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -33,6 +33,22 @@ async function fetchMemories(type?: string): Promise<Memory[]> {
   if (!res.ok) throw new Error('Failed to fetch memories')
   const data = await res.json()
   return data.memories
+}
+
+async function searchMemories(query: string): Promise<Memory[]> {
+  const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=20`)
+  if (!res.ok) throw new Error('Search failed')
+  const data = await res.json()
+  return data.memories
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs)
+    return () => clearTimeout(timer)
+  }, [value, delayMs])
+  return debounced
 }
 
 function MemoryCard({ memory }: { memory: Memory }) {
@@ -83,21 +99,23 @@ function MemoryCard({ memory }: { memory: Memory }) {
 export default function MemoriesPage() {
   const [activeTab, setActiveTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedQuery = useDebouncedValue(searchQuery.trim(), 400)
+  const isSearching = debouncedQuery.length > 0
 
-  const { data: memories = [], isLoading } = useQuery({
+  const { data: memories = [], isLoading: memoriesLoading } = useQuery({
     queryKey: ['memories', activeTab],
     queryFn: () => fetchMemories(activeTab),
+    enabled: !isSearching,
   })
 
-  const filtered = memories.filter((m) => {
-    if (!searchQuery) return true
-    const q = searchQuery.toLowerCase()
-    return (
-      m.ai_summary?.toLowerCase().includes(q) ||
-      m.raw_input.toLowerCase().includes(q) ||
-      m.tags.some((t) => t.includes(q))
-    )
+  const { data: searchResults = [], isLoading: searchLoading, isFetching: searchFetching } = useQuery({
+    queryKey: ['search', debouncedQuery],
+    queryFn: () => searchMemories(debouncedQuery),
+    enabled: isSearching,
   })
+
+  const isLoading = isSearching ? searchLoading : memoriesLoading
+  const filtered = isSearching ? searchResults : memories
 
   return (
     <div className="flex flex-col h-full">
@@ -111,13 +129,16 @@ export default function MemoriesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Search memories..."
-            className="pl-9 h-9 text-sm"
+            className="pl-9 pr-9 h-9 text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {isSearching && searchFetching && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground animate-spin" />
+          )}
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="h-8 bg-muted/50">
+          <TabsList className={cn('h-8 bg-muted/50', isSearching && 'opacity-40 pointer-events-none')}>
             {Object.entries(TYPE_CONFIG).map(([key, { label }]) => (
               <TabsTrigger key={key} value={key} className="text-xs px-2 h-6">
                 {label}

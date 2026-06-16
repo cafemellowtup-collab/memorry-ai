@@ -4,11 +4,15 @@ import type { MemoryRow, MemoryInsert, MemoryUpdate } from '@/lib/db/types'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Db = SupabaseClient<any>
 
+// Excludes `embedding` — it's a 768-number vector with no UI use, and including it
+// bloats every response by ~10-15KB per memory for no benefit.
+const MEMORY_COLUMNS = 'id, user_id, raw_input, ai_summary, type, tags, importance, remind_at, remind_repeat, remind_sent_at, source, is_archived, metadata, created_at, updated_at'
+
 export async function createMemory(db: Db, data: MemoryInsert): Promise<MemoryRow> {
   const { data: memory, error } = await db
     .from('memories')
     .insert(data)
-    .select()
+    .select(MEMORY_COLUMNS)
     .single()
 
   if (error) throw new Error(error.message)
@@ -29,7 +33,7 @@ export async function getMemories(
 
   let query = db
     .from('memories')
-    .select('*')
+    .select(MEMORY_COLUMNS)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
@@ -45,7 +49,7 @@ export async function getMemories(
 export async function getMemoryById(db: Db, id: string): Promise<MemoryRow | null> {
   const { data, error } = await db
     .from('memories')
-    .select('*')
+    .select(MEMORY_COLUMNS)
     .eq('id', id)
     .single()
 
@@ -58,7 +62,7 @@ export async function updateMemory(db: Db, id: string, updates: MemoryUpdate): P
     .from('memories')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id)
-    .select()
+    .select(MEMORY_COLUMNS)
     .single()
 
   if (error) throw new Error(error.message)
@@ -80,7 +84,7 @@ export async function getUpcomingReminders(
 
   const { data, error } = await db
     .from('memories')
-    .select('*')
+    .select(MEMORY_COLUMNS)
     .eq('user_id', userId)
     .not('remind_at', 'is', null)
     .gte('remind_at', now.toISOString())

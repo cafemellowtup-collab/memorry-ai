@@ -18,12 +18,21 @@ const STARTER_PROMPTS = [
   "I want to read 20 books this year",
 ]
 
+const MAX_MESSAGE_LENGTH = 10000
+
 export default function ChatPage() {
   const [input, setInput] = useState('')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const { messages, sendMessage, status } = useChat({
-    transport: new TextStreamChatTransport({ api: '/api/chat' }),
+    transport: new TextStreamChatTransport({
+      api: '/api/chat',
+      body: { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+    }),
+    onError: (error) => {
+      setErrorMessage(error.message || 'Something went wrong. Please try again.')
+    },
   })
 
   const isLoading = status === 'submitted' || status === 'streaming'
@@ -34,6 +43,7 @@ export default function ChatPage() {
 
   function handleSend() {
     if (!input.trim() || isLoading) return
+    setErrorMessage(null)
     sendMessage({ text: input.trim() })
     setInput('')
   }
@@ -155,23 +165,31 @@ export default function ChatPage() {
 
       {/* Input */}
       <div className="px-4 py-4 border-t border-border flex-shrink-0">
-        <div className="max-w-2xl mx-auto flex gap-2 items-end">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Tell me something to remember... (Enter to send, Shift+Enter for new line)"
-            className="resize-none min-h-[44px] max-h-32 text-sm"
-            rows={1}
-          />
-          <Button
-            onClick={handleSend}
-            size="icon"
-            disabled={isLoading || !input.trim()}
-            className="flex-shrink-0 h-11 w-11"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+        <div className="max-w-2xl mx-auto">
+          {errorMessage && (
+            <div className="mb-2 text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
+              {errorMessage}
+            </div>
+          )}
+          <div className="flex gap-2 items-end">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Tell me something to remember... (Enter to send, Shift+Enter for new line)"
+              className="resize-none min-h-[44px] max-h-32 text-sm"
+              rows={1}
+              maxLength={MAX_MESSAGE_LENGTH}
+            />
+            <Button
+              onClick={handleSend}
+              size="icon"
+              disabled={isLoading || !input.trim()}
+              className="flex-shrink-0 h-11 w-11"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServer } from '@/lib/db/supabase'
+import { createSupabaseServer } from '@/lib/db/supabase-server'
 import { createMemory, getMemories } from '@/lib/db/queries/memories'
 import { CreateMemorySchema } from '@/lib/validation/schemas'
 import { extractMemoryFromInput } from '@/lib/ai/memory-extraction'

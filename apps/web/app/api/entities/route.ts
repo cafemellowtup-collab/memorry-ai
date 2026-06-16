@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createSupabaseServer } from '@/lib/db/supabase'
+import { createSupabaseServer } from '@/lib/db/supabase-server'
 import { unauthorized, handleApiError } from '@/lib/utils/errors'
 import type { EntityRow } from '@/lib/db/types'
 

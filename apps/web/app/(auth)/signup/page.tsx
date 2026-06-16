@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createSupabaseBrowser } from '@/lib/db/supabase'
+import { createSupabaseBrowser } from '@/lib/db/supabase-browser'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -26,7 +26,7 @@ export default function SignupPage() {
     setError(null)
 
     const db = createSupabaseBrowser()
-    const { error: signUpError } = await db.auth.signUp({
+    const { data, error: signUpError } = await db.auth.signUp({
       email,
       password,
       options: {
@@ -38,6 +38,11 @@ export default function SignupPage() {
     if (signUpError) {
       setError(signUpError.message)
       setLoading(false)
+      return
+    }
+
+    if (data.session) {
+      router.push('/chat')
       return
     }
 

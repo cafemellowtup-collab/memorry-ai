@@ -40,27 +40,29 @@ function NavItem({ href, icon: Icon, label, collapsed = false }: {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Link
-          href={href}
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
-            'text-sm font-medium',
-            isActive
-              ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            collapsed && 'justify-center px-2',
-          )}
-        >
-          <Icon className="h-4 w-4 flex-shrink-0" />
-          {!collapsed && <span>{label}</span>}
-          {isActive && !collapsed && (
-            <motion.div
-              layoutId="nav-indicator"
-              className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
-            />
-          )}
-        </Link>
+      <TooltipTrigger
+        render={
+          <Link
+            href={href}
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
+              'text-sm font-medium',
+              isActive
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              collapsed && 'justify-center px-2',
+            )}
+          />
+        }
+      >
+        <Icon className="h-4 w-4 flex-shrink-0" />
+        {!collapsed && <span>{label}</span>}
+        {isActive && !collapsed && (
+          <motion.div
+            layoutId="nav-indicator"
+            className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
+          />
+        )}
       </TooltipTrigger>
       {collapsed && <TooltipContent side="right">{label}</TooltipContent>}
     </Tooltip>
@@ -133,10 +135,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <span className="font-bold text-sm">MemoryAI</span>
         </div>
         <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Menu className="h-4 w-4" />
-            </Button>
+          <SheetTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+            <Menu className="h-4 w-4" />
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-56">
             <Sidebar />
