@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 
 const navItems = [
   { href: '/chat', icon: MessageSquare, label: 'Chat' },
@@ -77,11 +78,12 @@ function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
         collapsed ? 'w-16' : 'w-56',
       )}
     >
-      <div className={cn('flex items-center gap-2 p-4 border-b border-border', collapsed && 'justify-center p-3')}>
+      <div className={cn('flex items-center gap-2 p-4 border-b border-border', collapsed && 'flex-col gap-3 p-3')}>
         <Brain className="h-6 w-6 text-primary flex-shrink-0" />
-        {!collapsed && (
-          <span className="font-bold text-base tracking-tight">MemoryAI</span>
-        )}
+        {!collapsed && <span className="font-bold text-base tracking-tight">MemoryAI</span>}
+        <div className={cn(!collapsed && 'ml-auto')}>
+          <NotificationBell />
+        </div>
       </div>
 
       <nav className="flex flex-col gap-1 p-3 flex-1">
@@ -134,14 +136,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Brain className="h-5 w-5 text-primary" />
           <span className="font-bold text-sm">MemoryAI</span>
         </div>
-        <Sheet>
-          <SheetTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
-            <Menu className="h-4 w-4" />
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-56">
-            <Sidebar />
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <Sheet>
+            <SheetTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+              <Menu className="h-4 w-4" />
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-56">
+              <Sidebar />
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       {/* Main content */}

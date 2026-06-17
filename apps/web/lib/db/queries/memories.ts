@@ -95,3 +95,25 @@ export async function getUpcomingReminders(
   if (error) throw new Error(error.message)
   return (data ?? []) as MemoryRow[]
 }
+
+// Cross-user: every reminder that is due now and has NOT been delivered yet.
+// Used only by the cron delivery engine with the service-role client (bypasses RLS).
+// remind_sent_at IS NULL is the "fire exactly once" guard; recurring reminders are
+// rolled forward (remind_at advanced, remind_sent_at reset) so they re-qualify next cycle.
+export async function getAllDueReminders(
+  db: Db,
+  nowIso: string = new Date().toISOString(),
+): Promise<MemoryRow[]> {
+  const { data, error } = await db
+    .from('memories')
+    .select(MEMORY_COLUMNS)
+    .not('remind_at', 'is', null)
+    .lte('remind_at', nowIso)
+    .is('remind_sent_at', null)
+    .eq('is_archived', false)
+    .order('remind_at', { ascending: true })
+    .limit(500)
+
+  if (error) throw new Error(error.message)
+  return (data ?? []) as MemoryRow[]
+}

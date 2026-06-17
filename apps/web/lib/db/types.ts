@@ -77,6 +77,32 @@ export interface ProfileRow {
   created_at: string
 }
 
+export type NotificationType = 'reminder' | 'digest' | 'nudge' | 'system'
+
+export interface NotificationRow {
+  id: string
+  user_id: string
+  memory_id: string | null
+  title: string
+  body: string | null
+  type: NotificationType
+  url: string | null
+  channels: Json
+  read_at: string | null
+  created_at: string
+}
+
+export interface PushSubscriptionRow {
+  id: string
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  user_agent: string | null
+  created_at: string
+  last_used_at: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -166,6 +192,43 @@ export interface Database {
           messages?: Json
           context_summary?: string | null
           last_activity_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: NotificationRow
+        Insert: {
+          id?: string
+          user_id: string
+          memory_id?: string | null
+          title: string
+          body?: string | null
+          type?: NotificationType
+          url?: string | null
+          channels?: Json
+          read_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          read_at?: string | null
+          channels?: Json
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: PushSubscriptionRow
+        Insert: {
+          id?: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent?: string | null
+          created_at?: string
+          last_used_at?: string
+        }
+        Update: {
+          last_used_at?: string
         }
         Relationships: []
       }

@@ -84,6 +84,14 @@ export default function LoginPage() {
                   className="h-9 text-sm"
                 />
               </div>
+              <div class="text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
               {error && (
                 <p className="text-xs text-destructive">{error}</p>
               )}

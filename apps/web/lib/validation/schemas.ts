@@ -55,3 +55,22 @@ export const ExtractedMemorySchema = z.object({
   supersedes_summaries: z.array(z.string()),
 })
 export type ExtractedMemory = z.infer<typeof ExtractedMemorySchema>
+
+// Browser PushSubscription.toJSON() shape sent by the client when enabling notifications.
+export const PushSubscriptionSchema = z.object({
+  endpoint: z.string().url().max(2000),
+  keys: z.object({
+    p256dh: z.string().min(1).max(500),
+    auth: z.string().min(1).max(500),
+  }),
+})
+export type PushSubscriptionInput = z.infer<typeof PushSubscriptionSchema>
+
+export const UnsubscribeSchema = z.object({
+  endpoint: z.string().url().max(2000),
+})
+
+// Mark one notification read (by id) or all of them (omit id).
+export const MarkReadSchema = z.object({
+  id: z.string().uuid().optional(),
+})

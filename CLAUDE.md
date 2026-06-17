@@ -71,15 +71,18 @@ apps/web/
 ```
 
 ## Current Phase
-**Phase 1 — MVP**: Foundation complete (auth, DB schema, AI client, chat UI, memories UI)
+**Phase 2 — Notifications shipped**: MVP complete (auth, search, reminders, settings, insights, people) plus a full notification system — cron delivery engine, recurring-reminder rollover, in-app notification feed (bell), and Web Push to installed PWA on phone/PC. Email + Telegram are wired as channels, off until their keys are set.
+
+## Setup needed to activate notifications
+1. Run `supabase/migrations/003_notifications_and_push.sql` in the Supabase SQL editor (adds `notifications` + `push_subscriptions` tables). **Until this runs, reminder delivery fails on the missing table.**
+2. After deploying, run `supabase/migrations/004_schedule_reminder_cron.sql` (fill in the URL + CRON_SECRET placeholders) so reminders fire on any hosting plan. Locally, use `npm run cron:test`.
+3. VAPID push keys are already generated in `.env.local`. Optional later: set `RESEND_*` for email, `TELEGRAM_BOT_TOKEN` for Telegram.
 
 ## Next Tasks (pick one per session)
-1. Auth pages (login/signup with Supabase Auth)
-2. Semantic search API route + search bar
-3. Reminder delivery (cron API route + email via Resend)
-4. TanStack Query provider wrapper
-5. Reminders page
-6. Settings page with Google Auth
+1. Make reminders interactive (snooze / complete / delete on the Reminders page)
+2. Daily/weekly digest notification (type 'digest' already supported)
+3. Telegram capture + link flow (finish the scaffolded channel)
+4. Markdown rendering + in-chat memory citations
 
 ## Services Setup (Do This Before First Run)
 1. supabase.com → create project → run `supabase/migrations/001_initial_schema.sql` in SQL editor

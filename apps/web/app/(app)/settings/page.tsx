@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { createSupabaseBrowser } from '@/lib/db/supabase-browser'
+import { PushToggle } from '@/components/notifications/push-toggle'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -26,6 +27,8 @@ export default function SettingsPage() {
 
       <div className="flex-1 overflow-auto px-6 py-6">
         <div className="max-w-lg space-y-4">
+          <PushToggle />
+
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
